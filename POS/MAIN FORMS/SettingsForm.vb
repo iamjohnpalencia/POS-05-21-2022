@@ -3048,7 +3048,6 @@ Public Class SettingsForm
         Try
             Dim ConnectionLocal As MySqlConnection = LocalhostConn()
             Dim Query As String = "TRUNCATE TABLE  " & ToTruncate & " ;"
-            Console.WriteLine(Query)
             Dim cmd As MySqlCommand = New MySqlCommand(Query, ConnectionLocal)
             cmd.ExecuteNonQuery()
             ConnectionLocal.Close()
@@ -3063,7 +3062,7 @@ Public Class SettingsForm
             Dim array() As String = {"loc_coupon_data", "loc_daily_transaction", "loc_daily_transaction_details", "loc_deposit", "loc_expense_details", "loc_expense_list",
             "loc_fm_stock", "loc_hold_inventory", "loc_inv_temp_data", "loc_pending_orders", "loc_refund_return_details", "loc_senior_details",
             "loc_system_logs", "loc_send_bug_report", "loc_transaction_mode_details", "loc_transfer_data", "loc_zread_inventory", "loc_admin_category", "loc_admin_products",
-            "loc_partners_transaction", "loc_pos_inventory", "loc_product_formula", "tbcoupon", "loc_cash_breakdown", "loc_zread_table"}
+            "loc_partners_transaction", "loc_pos_inventory", "loc_product_formula", "tbcoupon", "loc_cash_breakdown", "loc_customer_info"}
 
             With DataGridViewReset
                 If .Rows(0).Cells(1).Selected Then
