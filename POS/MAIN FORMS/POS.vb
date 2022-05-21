@@ -1353,13 +1353,13 @@ Public Class POS
                     cmd.Parameters.Add("@18", MySqlDbType.Int64).Value = .Rows(i).Cells(11).Value
                     cmd.Parameters.Add("@19", MySqlDbType.Text).Value = .Rows(i).Cells(13).Value
                     cmd.Parameters.Add("@20", MySqlDbType.Double).Value = If(.Rows(i).Cells(15).Value > 0, .Rows(i).Cells(15).Value, 0)
-                    cmd.Parameters.Add("@21", MySqlDbType.Double).Value = If(.Rows(i).Cells(16).Value > 0, .Rows(i).Cells(15).Value, 0)
-                    cmd.Parameters.Add("@22", MySqlDbType.Double).Value = If(.Rows(i).Cells(17).Value > 0, .Rows(i).Cells(15).Value, 0)
-                    cmd.Parameters.Add("@23", MySqlDbType.Double).Value = If(.Rows(i).Cells(18).Value > 0, .Rows(i).Cells(15).Value, 0)
-                    cmd.Parameters.Add("@24", MySqlDbType.Double).Value = If(.Rows(i).Cells(19).Value > 0, .Rows(i).Cells(15).Value, 0)
-                    cmd.Parameters.Add("@25", MySqlDbType.Double).Value = If(.Rows(i).Cells(20).Value > 0, .Rows(i).Cells(15).Value, 0)
-                    cmd.Parameters.Add("@26", MySqlDbType.Double).Value = If(.Rows(i).Cells(21).Value > 0, .Rows(i).Cells(15).Value, 0)
-                    cmd.Parameters.Add("@27", MySqlDbType.Double).Value = If(.Rows(i).Cells(22).Value > 0, .Rows(i).Cells(15).Value, 0)
+                    cmd.Parameters.Add("@21", MySqlDbType.Double).Value = If(.Rows(i).Cells(16).Value > 0, .Rows(i).Cells(16).Value, 0)
+                    cmd.Parameters.Add("@22", MySqlDbType.Double).Value = If(.Rows(i).Cells(17).Value > 0, .Rows(i).Cells(17).Value, 0)
+                    cmd.Parameters.Add("@23", MySqlDbType.Double).Value = If(.Rows(i).Cells(18).Value > 0, .Rows(i).Cells(18).Value, 0)
+                    cmd.Parameters.Add("@24", MySqlDbType.Double).Value = If(.Rows(i).Cells(19).Value > 0, .Rows(i).Cells(19).Value, 0)
+                    cmd.Parameters.Add("@25", MySqlDbType.Double).Value = If(.Rows(i).Cells(20).Value > 0, .Rows(i).Cells(20).Value, 0)
+                    cmd.Parameters.Add("@26", MySqlDbType.Double).Value = If(.Rows(i).Cells(21).Value > 0, .Rows(i).Cells(21).Value, 0)
+                    cmd.Parameters.Add("@27", MySqlDbType.Double).Value = If(.Rows(i).Cells(22).Value > 0, .Rows(i).Cells(22).Value, 0)
                     cmd.ExecuteNonQuery()
                     totalcostofgoods = 0
                 Next

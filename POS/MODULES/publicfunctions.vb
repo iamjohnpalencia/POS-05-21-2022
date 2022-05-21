@@ -563,15 +563,15 @@ Module publicfunctions
                                     RECEIPTLINECOUNT += 10
                                     Dim SINumber = reader("si_number")
                                     If ReprintSales Then
-                                        SimpleTextDisplay(sender, e, "SI No.: " & Format(SINumber, S_SIFormat) & " | Reprint Copy", FontDefault, 0, RECEIPTLINECOUNT)
-                                        FillEJournalContent("SI No.: " & Format(SINumber, S_SIFormat) & " | Reprint Copy")
+                                        SimpleTextDisplay(sender, e, "SI No.: " & Format(SINumber, S_SIFormat) & " | REPRINT COPY", FontDefault, 0, RECEIPTLINECOUNT)
+                                        FillEJournalContent("SI No.: " & Format(SINumber, S_SIFormat) & " | REPRINT COPY")
                                     Else
                                         If .Reprint = 1 Then
-                                            SimpleTextDisplay(sender, e, "SI No.: " & Format(SINumber, S_SIFormat) & " | Customers Copy", FontDefault, 0, RECEIPTLINECOUNT)
-                                            FillEJournalContent("SI No.: " & Format(SINumber, S_SIFormat) & " | Customers Copy")
+                                            SimpleTextDisplay(sender, e, "SI No.: " & Format(SINumber, S_SIFormat) & " | CUSTOMERS COPY", FontDefault, 0, RECEIPTLINECOUNT)
+                                            FillEJournalContent("SI No.: " & Format(SINumber, S_SIFormat) & " | CUSTOMERS COPY")
                                         Else
-                                            SimpleTextDisplay(sender, e, "SI No.: " & Format(SINumber, S_SIFormat) & " | Reprint Copy", FontDefault, 0, RECEIPTLINECOUNT)
-                                            FillEJournalContent("SI No.: " & Format(SINumber, S_SIFormat) & " | Reprint Copy")
+                                            SimpleTextDisplay(sender, e, "SI No.: " & Format(SINumber, S_SIFormat) & " | REPRINT COPY", FontDefault, 0, RECEIPTLINECOUNT)
+                                            FillEJournalContent("SI No.: " & Format(SINumber, S_SIFormat) & " | REPRINT COPY")
                                         End If
                                     End If
 
