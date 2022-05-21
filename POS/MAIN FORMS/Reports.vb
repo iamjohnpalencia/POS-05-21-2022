@@ -143,6 +143,9 @@ Public Class Reports
                 ButtonAuditTrail.Enabled = False
             End If
 
+            If ClientRole = "Manager" Then
+                ButtonZReading.Enabled = True
+            End If
 
         Catch ex As Exception
             AuditTrail.LogToAuditTral("System", "Reports: " & ex.ToString, "Critical")
@@ -3380,6 +3383,8 @@ Public Class Reports
             AuditTrail.LogToAuditTral("Report", "Reports/Others: E-Journal Generated, " & CompleteDirectoryPath, "Normal")
 
             File.WriteAllLines(CompletePath, TxtFileLine, Encoding.UTF8)
+
+            MsgBox("Complete")
         Catch ex As Exception
             AuditTrail.LogToAuditTral("System", "Reports: " & ex.ToString, "Critical")
 

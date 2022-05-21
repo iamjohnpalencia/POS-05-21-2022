@@ -43,7 +43,7 @@ Public Class Inventory
                 GroupBoxStockAdjustment.Visible = False
             End If
 
-            If ClientRole = "Crew" Or ClientRole = "Head Crew" Then
+            If ClientRole = "Head Crew" Then
                 TabControl1.TabPages.Remove(TabControl1.TabPages(3))
                 ButtonResetInventory.Enabled = False
                 ButtonResetInventory.Visible = False

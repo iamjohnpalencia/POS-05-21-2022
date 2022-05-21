@@ -1187,13 +1187,16 @@ Module publicfunctions
                             FillEJournalContent("Vat Exempt Sales:     -" & reader("vatexemptsales"))
                             RECEIPTLINECOUNT += 10
 
-                            If reader("zeroratedsales") > 0 Then
-                                RightToLeftDisplay(sender, e, RECEIPTLINECOUNT, "Less VAT: ", "0.00" & "-", FontDefault, 11, 0)
-                                FillEJournalContent("Less VAT:     -0.00")
-                            Else
-                                RightToLeftDisplay(sender, e, RECEIPTLINECOUNT, "Less VAT: ", reader("lessvat") & "-", FontDefault, 11, 0)
-                                FillEJournalContent("Less VAT:     -" & reader("lessvat"))
-                            End If
+                            RightToLeftDisplay(sender, e, RECEIPTLINECOUNT, "Less VAT: ", reader("lessvat") & "-", FontDefault, 11, 0)
+                            FillEJournalContent("Less VAT:     -" & reader("lessvat"))
+
+                            'If reader("zeroratedsales") > 0 Then
+                            '    RightToLeftDisplay(sender, e, RECEIPTLINECOUNT, "Less VAT: ", "0.00" & "-", FontDefault, 11, 0)
+                            '    FillEJournalContent("Less VAT:     -0.00")
+                            'Else
+                            '    RightToLeftDisplay(sender, e, RECEIPTLINECOUNT, "Less VAT: ", reader("lessvat") & "-", FontDefault, 11, 0)
+                            '    FillEJournalContent("Less VAT:     -" & reader("lessvat"))
+                            'End If
 
                             RECEIPTLINECOUNT += 10
                             RightToLeftDisplay(sender, e, RECEIPTLINECOUNT, "Zero Rated Sales: ", reader("zeroratedsales") & "-", FontDefault, 11, 0)
@@ -1311,13 +1314,16 @@ Module publicfunctions
                                 FillEJournalContent("Less Discount: " & reader("totaldiscount"))
                                 RECEIPTLINECOUNT += 10
 
-                                If reader("zeroratedsales") > 0 Then
-                                    RightToLeftDisplay(sender, e, RECEIPTLINECOUNT, "Less VAT: ", "0.00", FontDefault, 11, 0)
-                                    FillEJournalContent("Less VAT: :      0.00")
-                                Else
-                                    RightToLeftDisplay(sender, e, RECEIPTLINECOUNT, "Less VAT: ", reader("lessvat"), FontDefault, 11, 0)
-                                    FillEJournalContent("Less VAT: :      " & reader("lessvat"))
-                                End If
+                                RightToLeftDisplay(sender, e, RECEIPTLINECOUNT, "Less VAT: ", reader("lessvat"), FontDefault, 11, 0)
+                                FillEJournalContent("Less VAT: :      " & reader("lessvat"))
+
+                                'If reader("zeroratedsales") > 0 Then
+                                '    RightToLeftDisplay(sender, e, RECEIPTLINECOUNT, "Less VAT: ", "0.00", FontDefault, 11, 0)
+                                '    FillEJournalContent("Less VAT: :      0.00")
+                                'Else
+                                '    RightToLeftDisplay(sender, e, RECEIPTLINECOUNT, "Less VAT: ", reader("lessvat"), FontDefault, 11, 0)
+                                '    FillEJournalContent("Less VAT: :      " & reader("lessvat"))
+                                'End If
 
                                 RECEIPTLINECOUNT += 10
                                 RightToLeftDisplay(sender, e, RECEIPTLINECOUNT, "Amount Due: ", reader("amountdue"), FontDefaultBold, 11, 0)
@@ -1349,13 +1355,16 @@ Module publicfunctions
                                 FillEJournalContent("Vat Exempt Sales:      " & reader("vatexemptsales"))
                                 RECEIPTLINECOUNT += 10
 
-                                If reader("zeroratedsales") > 0 Then
-                                    RightToLeftDisplay(sender, e, RECEIPTLINECOUNT, "Less Vat: ", "0.00", FontDefault, 11, 0)
-                                    FillEJournalContent("Less Vat: :      0.00")
-                                Else
-                                    RightToLeftDisplay(sender, e, RECEIPTLINECOUNT, "Less Vat: ", reader("lessvat"), FontDefault, 11, 0)
-                                    FillEJournalContent("Less Vat: :      " & reader("lessvat"))
-                                End If
+                                RightToLeftDisplay(sender, e, RECEIPTLINECOUNT, "Less Vat: ", reader("lessvat"), FontDefault, 11, 0)
+                                FillEJournalContent("Less Vat: :      " & reader("lessvat"))
+
+                                'If reader("zeroratedsales") > 0 Then
+                                '    RightToLeftDisplay(sender, e, RECEIPTLINECOUNT, "Less Vat: ", "0.00", FontDefault, 11, 0)
+                                '    FillEJournalContent("Less Vat: :      0.00")
+                                'Else
+                                '    RightToLeftDisplay(sender, e, RECEIPTLINECOUNT, "Less Vat: ", reader("lessvat"), FontDefault, 11, 0)
+                                '    FillEJournalContent("Less Vat: :      " & reader("lessvat"))
+                                'End If
 
                                 RECEIPTLINECOUNT += 10
                                 RightToLeftDisplay(sender, e, RECEIPTLINECOUNT, "Zero Rated Sales: ", reader("zeroratedsales"), FontDefault, 11, 0)
@@ -1515,13 +1524,16 @@ Module publicfunctions
                         FillEJournalContent("Vat Exempt Sales:      " & NUMBERFORMAT(VATEXEMPTSALES))
                         RECEIPTLINECOUNT += 10
 
-                        If S_ZeroRated = "0" Then
-                            RightToLeftDisplay(sender, e, RECEIPTLINECOUNT, "Less Vat: ", NUMBERFORMAT(LESSVAT), FontDefault, 11, 0)
-                            FillEJournalContent("Less Vat:      " & NUMBERFORMAT(LESSVAT))
-                        Else
-                            RightToLeftDisplay(sender, e, RECEIPTLINECOUNT, "Less Vat: ", "0.00", FontDefault, 11, 0)
-                            FillEJournalContent("Less Vat:      0.00")
-                        End If
+                        RightToLeftDisplay(sender, e, RECEIPTLINECOUNT, "Less Vat: ", NUMBERFORMAT(LESSVAT), FontDefault, 11, 0)
+                        FillEJournalContent("Less Vat:      " & NUMBERFORMAT(LESSVAT))
+
+                        'If S_ZeroRated = "0" Then
+                        '    RightToLeftDisplay(sender, e, RECEIPTLINECOUNT, "Less Vat: ", NUMBERFORMAT(LESSVAT), FontDefault, 11, 0)
+                        '    FillEJournalContent("Less Vat:      " & NUMBERFORMAT(LESSVAT))
+                        'Else
+                        '    RightToLeftDisplay(sender, e, RECEIPTLINECOUNT, "Less Vat: ", NUMBERFORMAT(LESSVAT), FontDefault, 11, 0)
+                        '    FillEJournalContent("Less Vat:      " & NUMBERFORMAT(LESSVAT))
+                        'End If
 
                         RECEIPTLINECOUNT += 10
                         RightToLeftDisplay(sender, e, RECEIPTLINECOUNT, "Zero Rated Sales: ", NUMBERFORMAT(ZERORATEDSALES), FontDefault, 11, 0)

@@ -4361,20 +4361,23 @@ Public Class SettingsForm
         End If
     End Sub
 
-    Private Sub TextBoxS_ZeroRated_TextChanged(sender As Object, e As EventArgs) Handles TextBoxS_ZeroRated.TextChanged
+    Private Sub ButtonSaveZeroRated_Click(sender As Object, e As EventArgs) Handles ButtonSaveZeroRated.Click
         Try
-            Dim ConnectionLocal As MySqlConnection = LocalhostConn()
-            Dim Query As String = "UPDATE loc_settings SET S_ZeroRated_Tax = '" & Trim(TextBoxS_ZeroRated.Text) & "' WHERE settings_id = 1"
-            Dim Command As MySqlCommand = New MySqlCommand(Query, ConnectionLocal)
-            S_ZeroRated_Tax = Trim(TextBoxS_ZeroRated.Text)
-            Command.ExecuteNonQuery()
-            ConnectionLocal.Close()
-            Command.Dispose()
+            If Double.Parse(TextBoxS_ZeroRated.Text) > 0 Then
+                Dim ConnectionLocal As MySqlConnection = LocalhostConn()
+                Dim Query As String = "UPDATE loc_settings SET S_ZeroRated_Tax = '" & Trim(TextBoxS_ZeroRated.Text) & "' WHERE settings_id = 1"
+                Dim Command As MySqlCommand = New MySqlCommand(Query, ConnectionLocal)
+                S_ZeroRated_Tax = Trim(TextBoxS_ZeroRated.Text)
+                Command.ExecuteNonQuery()
+                ConnectionLocal.Close()
+                Command.Dispose()
+            Else
+                MsgBox("Zero rated tax must be greater than zero")
+            End If
         Catch ex As Exception
             MsgBox(ex.ToString)
         End Try
     End Sub
-
 
 
 
