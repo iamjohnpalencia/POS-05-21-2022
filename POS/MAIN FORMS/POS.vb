@@ -1576,6 +1576,9 @@ Public Class POS
                 SiNumberToString = S_SI_NUMBER.ToString(S_SIFormat)
             End If
 
+            GLOBAL_FUNCTION_UPDATE("loc_settings", "S_Trn_No = " & S_TRANSACTION_NUMBER, "settings_id = 1")
+            GLOBAL_FUNCTION_UPDATE("loc_settings", "S_SI_No = " & S_SI_NUMBER, "settings_id = 1")
+
             For i = 0 To 100
                 BackgroundWorkerTransactions.ReportProgress(i)
                 If i = 0 Then
@@ -1694,6 +1697,9 @@ Public Class POS
         Enabled = True
         WaitFrm.Close()
         PaymentForm.Close()
+
+
+
         If DataGridViewOrders.Rows.Count > 0 Then
             Try
                 Dim TotalLines As Integer = 0
@@ -1758,8 +1764,7 @@ Public Class POS
             End Try
 
             InsertIntoEJournal()
-            GLOBAL_FUNCTION_UPDATE("loc_settings", "S_Trn_No = " & S_TRANSACTION_NUMBER, "settings_id = 1")
-            GLOBAL_FUNCTION_UPDATE("loc_settings", "S_SI_No = " & S_SI_NUMBER, "settings_id = 1")
+
             selectmax(1)
 
             SystemLogType = "TRANSACTION"
