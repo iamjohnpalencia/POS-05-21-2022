@@ -45,6 +45,8 @@ Public Class AuditTrail
                 DataGridViewAuditTrail.Rows.Add(Dt(i)(0), Dt(i)(1), Dt(i)(2), Dt(i)(3), Dt(i)(4), Dt(i)(5), Dt(i)(6), Dt(i)(7))
                 If Dt(i)(3) = "Normal" Then
                     DataGridViewAuditTrail.Rows(i).Cells(3).Style.BackColor = Color.LightGreen
+                Else
+                    DataGridViewAuditTrail.Rows(i).Cells(3).Style.BackColor = Color.OrangeRed
                 End If
             Next
 
@@ -247,6 +249,27 @@ Public Class AuditTrail
             Dim CompletePath As String = CompleteDirectoryPath & "\AuditTrail" & FullDateFormatForSaving() & ".txt"
             LogToAuditTral("Report", "Audit Trail: Txt file generated, " & CompleteDirectoryPath, "Normal")
             File.WriteAllLines(CompletePath, TxtFileLine, Encoding.UTF8)
+        Catch ex As Exception
+            LogToAuditTral("System", "Audit: " & ex.ToString, "Critical")
+        End Try
+    End Sub
+
+    Private Sub ToolStripComboBox1_Click(sender As Object, e As EventArgs) Handles ToolStripComboBox1.Click
+
+    End Sub
+
+    Private Sub ToolStripComboBox1_SelectedIndexChanged(sender As Object, e As EventArgs) Handles ToolStripComboBox1.SelectedIndexChanged
+        ATGroupName = "All"
+        ATUserName = "All"
+        ATFromDate = Format(Now(), "yyyy-MM-dd")
+        ATToDate = Format(Now(), "yyyy-MM-dd")
+        ATRowLimit = ToolStripComboBox1.Text
+
+        Try
+            LoadLogs(False)
+
+
+
         Catch ex As Exception
             LogToAuditTral("System", "Audit: " & ex.ToString, "Critical")
         End Try

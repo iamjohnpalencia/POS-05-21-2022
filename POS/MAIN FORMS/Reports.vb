@@ -2579,12 +2579,6 @@ Public Class Reports
 
             ZXBegBalance = If(ZXBegBalance = "", 0, ZXBegBalance)
 
-            ThreadZXRead = New Thread(Sub() ZXGross = sum("grosssales", "loc_daily_transaction WHERE " & ZReadDateFilter & " AND active = 1"))
-            ThreadZXRead.Start()
-            ThreadlistZXRead.Add(ThreadZXRead)
-            For Each t In ThreadlistZXRead
-                t.Join()
-            Next
 
             If S_ZeroRated = "0" Then
                 ThreadZXRead = New Thread(Sub() ZXLessVat = sum("lessvat", "loc_daily_transaction WHERE " & ZReadDateFilter & " AND active = 1"))
@@ -2594,8 +2588,33 @@ Public Class Reports
                     t.Join()
                 Next
             Else
-                ZXLessVat = 0
+                'ZXLessVat = 0
+                ThreadZXRead = New Thread(Sub() ZXLessVatOthers = sum("lessvat", "loc_daily_transaction WHERE " & ZReadDateFilter & " AND active = 1"))
+                ThreadZXRead.Start()
+                ThreadlistZXRead.Add(ThreadZXRead)
+                For Each t In ThreadlistZXRead
+                    t.Join()
+                Next
+
             End If
+
+            If S_ZeroRated = "0" Then
+                ThreadZXRead = New Thread(Sub() ZXGross = sum("grosssales", "loc_daily_transaction WHERE " & ZReadDateFilter & " AND active = 1"))
+                ThreadZXRead.Start()
+                ThreadlistZXRead.Add(ThreadZXRead)
+                For Each t In ThreadlistZXRead
+                    t.Join()
+                Next
+            Else
+                ThreadZXRead = New Thread(Sub() ZXGross = sum("grosssales", "loc_daily_transaction WHERE " & ZReadDateFilter & " AND active = 1"))
+                ThreadZXRead.Start()
+                ThreadlistZXRead.Add(ThreadZXRead)
+                For Each t In ThreadlistZXRead
+                    t.Join()
+                Next
+                ZXGross += ZXLessVatOthers
+            End If
+
 
             'ZXLessVatDiplomat N/A
             'ZXLessVatOthers N/A
@@ -2638,13 +2657,28 @@ Public Class Reports
                 t.Join()
             Next
 
-            ThreadZXRead = New Thread(Sub() ZXDailySales = ZXGross - ZXLessVat - ZXLessDiscVE)
-            'ThreadZXRead = New Thread(Sub() ZXDailySales = ZXGross - ZXLessVat - ZXTotalDiscounts)
-            ThreadZXRead.Start()
-            ThreadlistZXRead.Add(ThreadZXRead)
-            For Each t In ThreadlistZXRead
-                t.Join()
-            Next
+
+            If S_ZeroRated = "0" Then
+                ThreadZXRead = New Thread(Sub() ZXDailySales = ZXGross - ZXLessVat - ZXLessDiscVE)
+                'ThreadZXRead = New Thread(Sub() ZXDailySales = ZXGross - ZXLessVat - ZXTotalDiscounts)
+                ThreadZXRead.Start()
+                ThreadlistZXRead.Add(ThreadZXRead)
+                For Each t In ThreadlistZXRead
+                    t.Join()
+                Next
+            Else
+                ThreadZXRead = New Thread(Sub() ZXDailySales = ZXGross - ZXLessDiscVE - ZXLessVatOthers)
+                'ThreadZXRead = New Thread(Sub() ZXDailySales = ZXGross - ZXLessVat - ZXTotalDiscounts)
+                ThreadZXRead.Start()
+                ThreadlistZXRead.Add(ThreadZXRead)
+                For Each t In ThreadlistZXRead
+                    t.Join()
+                Next
+            End If
+
+            Console.WriteLine(ZXDailySales)
+
+
 
             ThreadZXRead = New Thread(Sub() ZXTotalExpenses = sum("total_amount", "loc_expense_list WHERE " & ZReadDateFilter & " AND active = 1"))
             ThreadZXRead.Start()
@@ -2653,12 +2687,23 @@ Public Class Reports
                 t.Join()
             Next
 
-            ThreadZXRead = New Thread(Sub() ZXCashTotal = sum("amountdue", "loc_daily_transaction WHERE active = 1 AND " & ZReadDateFilter & " "))
-            ThreadZXRead.Start()
-            ThreadlistZXRead.Add(ThreadZXRead)
-            For Each t In ThreadlistZXRead
-                t.Join()
-            Next
+            If S_ZeroRated = "0" Then
+                ThreadZXRead = New Thread(Sub() ZXCashTotal = sum("amountdue", "loc_daily_transaction WHERE active = 1 AND " & ZReadDateFilter & " "))
+                ThreadZXRead.Start()
+                ThreadlistZXRead.Add(ThreadZXRead)
+                For Each t In ThreadlistZXRead
+                    t.Join()
+                Next
+            Else
+                ThreadZXRead = New Thread(Sub() ZXCashTotal = ZXLessVatOthers + sum("amountdue", "loc_daily_transaction WHERE active = 1 AND " & ZReadDateFilter & " "))
+                ThreadZXRead.Start()
+                ThreadlistZXRead.Add(ThreadZXRead)
+                For Each t In ThreadlistZXRead
+                    t.Join()
+                Next
+            End If
+
+
 
             ThreadZXRead = New Thread(Sub() ZXGiftCard = sum("coupon_total", "loc_coupon_data WHERE " & ZReadDateFilter & " AND coupon_type = 'Fix-1' "))
             ThreadZXRead.Start()
@@ -2674,7 +2719,7 @@ Public Class Reports
                 t.Join()
             Next
 
-            ThreadZXRead = New Thread(Sub() ZXCashlessTotal = sum("amountdue", "loc_daily_transaction WHERE active IN (1,3) AND " & ZReadDateFilter & " AND transaction_type NOT IN ('Walk-in') "))
+            ThreadZXRead = New Thread(Sub() ZXCashlessTotal = sum("amountdue", "loc_daily_transaction WHERE active IN (1,3) AND " & ZReadDateFilter & " AND transaction_type NOT IN ('Walk-in' , 'Complementary Expenses')"))
             ThreadZXRead.Start()
             ThreadlistZXRead.Add(ThreadZXRead)
             For Each t In ThreadlistZXRead
@@ -2760,9 +2805,12 @@ Public Class Reports
             'ThreadlistZXRead.Add(ThreadZXRead)
             'For Each t In ThreadlistZXRead
             '    t.Join()
-            'Next
-
-            ZXCashInDrawer = ZXGross - ZXCashlessTotal - ZXLessDiscVE - ZXLessVat - ZXTotalExpenses - ZXDeposits + Double.Parse(ZXBegBalance)
+            'Nextf
+            If S_ZeroRated = "0" Then
+                ZXCashInDrawer = ZXGross - ZXCashlessTotal - ZXLessDiscVE - ZXLessVat - ZXTotalExpenses - ZXDeposits + Double.Parse(ZXBegBalance)
+            Else
+                ZXCashInDrawer = ZXGross - ZXCashlessTotal - ZXLessDiscVE - ZXTotalExpenses - ZXLessVatOthers - ZXDeposits + Double.Parse(ZXBegBalance)
+            End If
 
 
             ThreadZXRead = New Thread(Sub() ZXSeniorCitizen = sum("coupon_total", "loc_coupon_data WHERE coupon_name = 'Senior Discount 20%' AND " & ZReadDateFilter & " AND status = '1' "))

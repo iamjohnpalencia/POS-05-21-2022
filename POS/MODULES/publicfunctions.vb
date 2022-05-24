@@ -701,13 +701,13 @@ Module publicfunctions
             RightToLeftDisplay(sender, e, RECEIPTLINECOUNT, "GROSS", NUMBERFORMAT(ZXGross), FontDefault, 5, 0)
             FillEJournalContent("GROSS.         " & NUMBERFORMAT(ZXGross))
             RECEIPTLINECOUNT += 10
-            RightToLeftDisplay(sender, e, RECEIPTLINECOUNT, "LESS VAT (VE)", If(S_ZeroRated = "0", ZXLessVat, "0.00"), FontDefault, 5, 0)
-            FillEJournalContent("LESS VAT (VE)         " & If(S_ZeroRated = "0", ZXLessVat, "0.00"))
+            RightToLeftDisplay(sender, e, RECEIPTLINECOUNT, "LESS VAT (VE)", ZXLessVat, FontDefault, 5, 0)
+            FillEJournalContent("LESS VAT (VE)         " & ZXLessVat)
             RECEIPTLINECOUNT += 10
             RightToLeftDisplay(sender, e, RECEIPTLINECOUNT, "LESS VAT DIPLOMAT", "0.00", FontDefault, 5, 0)
             FillEJournalContent("LESS VAT DIPLOMAT         0.00")
             RECEIPTLINECOUNT += 10
-            RightToLeftDisplay(sender, e, RECEIPTLINECOUNT, "LESS VAT (OTHER)", "0.00", FontDefault, 5, 0)
+            RightToLeftDisplay(sender, e, RECEIPTLINECOUNT, "LESS VAT (OTHER)", NUMBERFORMAT(ZXLessVatOthers), FontDefault, 5, 0)
             FillEJournalContent("LESS VAT          0.00")
             RECEIPTLINECOUNT += 10
             RightToLeftDisplay(sender, e, RECEIPTLINECOUNT, "ADD VAT", "0.00", FontDefault, 5, 0)

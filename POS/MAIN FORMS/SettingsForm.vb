@@ -1438,7 +1438,8 @@ Public Class SettingsForm
     End Sub
     Private Sub BackupDatabase()
         Try
-            Dim DatabaseName = "\" & TextBoxLocalDatabase.Text & Format(Now(), "yyyy-MM-dd") & ".sql"
+            Dim DatabaseName = "\" & TextBoxLocalDatabase.Text & "-FBW" & ClientStoreID & Format(Now(), "yyyy-MM-dd-Hmmss") & ".sql"
+
             Process.Start("cmd.exe", "/k cd C:\xampp\mysql\bin & mysqldump --databases -h " & TextBoxLocalServer.Text & " -u " & TextBoxLocalUsername.Text & " -p " & TextBoxLocalPassword.Text & " " & TextBoxLocalDatabase.Text & " > """ & TextBoxExportPath.Text & DatabaseName & """")
         Catch ex As Exception
             MsgBox(ex.ToString)
@@ -3216,6 +3217,7 @@ Public Class SettingsForm
                 SystemLogDesc = "User Logout: " & returnfullname(where:=ClientCrewID)
                 SystemLogType = "LOG OUT"
                 GLOBAL_SYSTEM_LOGS(SystemLogType, SystemLogDesc)
+                AuditTrail.LogToAuditTral("System", "System Recalibrated, Reset initialized. Success!", "Critical")
                 POS.Close()
                 EndBalance()
                 Login.Show()
