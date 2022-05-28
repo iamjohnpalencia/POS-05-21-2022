@@ -1438,7 +1438,7 @@ Public Class SettingsForm
     End Sub
     Private Sub BackupDatabase()
         Try
-            Dim DatabaseName = "\" & TextBoxLocalDatabase.Text & "-FBW" & ClientStoreID & Format(Now(), "yyyy-MM-dd-Hmmss") & ".sql"
+            Dim DatabaseName = "\" & TextBoxLocalDatabase.Text & "-FBW" & ClientStoreID & Format(Now(), "yyyy-MM-dd-HHmmdd") & ".sql"
 
             Process.Start("cmd.exe", "/k cd C:\xampp\mysql\bin & mysqldump --databases -h " & TextBoxLocalServer.Text & " -u " & TextBoxLocalUsername.Text & " -p " & TextBoxLocalPassword.Text & " " & TextBoxLocalDatabase.Text & " > """ & TextBoxExportPath.Text & DatabaseName & """")
         Catch ex As Exception
