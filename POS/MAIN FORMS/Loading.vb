@@ -18,6 +18,7 @@ Public Class Loading
             BackgroundWorker1.WorkerSupportsCancellation = True
             BackgroundWorker1.WorkerReportsProgress = True
             BackgroundWorker1.RunWorkerAsync()
+            Console.Write(BackgroundWorker1.IsBusy.ToString)
         Catch ex As Exception
             SendErrorReport(ex.ToString)
         End Try

@@ -6,6 +6,7 @@ Imports MySql.Data.MySqlClient
 Imports System.Drawing.Printing
 Imports System.Text.RegularExpressions
 Imports System.Globalization
+Imports System.Xml
 
 Module publicfunctions
     Public drasd
@@ -493,6 +494,9 @@ Module publicfunctions
     Dim OfficialInvoiceRefundBody As String = ""
     Dim ReceiptValidity As String = ""
 
+    Public XML_Writer As XmlTextWriter
+
+
     Public Sub ReceiptHeaderOne(sender As Object, e As PrintPageEventArgs, VoidReturn As Boolean, TransactionNumber As String, ReprintSales As Boolean, SalesHeader As Boolean)
         Try
             RECEIPTLINECOUNT = 20
@@ -512,7 +516,7 @@ Module publicfunctions
                 FontDefaultLine = New Font("Tahoma", 7)
             End If
             CenterTextDisplay(sender, e, ClientBrand.ToUpper, BrandFont, 10)
-            FillEJournalContent(ClientBrand.ToUpper)
+            FillEJournalContent(ClientBrand.ToUpper, {}, "C", True, True)
 
             If SalesHeader Then
 
@@ -543,10 +547,9 @@ Module publicfunctions
                         ReceiptValidity = Dt(i)(0).ToString
                     Else
                         CenterTextDisplay(sender, e, Dt(i)(0), FontDefault, RECEIPTLINECOUNT)
-                        FillEJournalContent(Dt(i)(0))
+                        FillEJournalContent(Dt(i)(0), {}, "C", False, True)
                         RECEIPTLINECOUNT += 10
                     End If
-
                 Next
 
                 RECEIPTLINECOUNT -= 20
@@ -564,74 +567,75 @@ Module publicfunctions
                                     Dim SINumber = reader("si_number")
                                     If ReprintSales Then
                                         SimpleTextDisplay(sender, e, "SI No.: " & Format(SINumber, S_SIFormat) & " | REPRINT COPY", FontDefault, 0, RECEIPTLINECOUNT)
-                                        FillEJournalContent("SI No.: " & Format(SINumber, S_SIFormat) & " | REPRINT COPY")
+                                        FillEJournalContent("SI No.: " & Format(SINumber, S_SIFormat) & " | REPRINT COPY", {}, "S", False, True)
                                     Else
                                         If .Reprint = 1 Then
                                             SimpleTextDisplay(sender, e, "SI No.: " & Format(SINumber, S_SIFormat) & " | CUSTOMERS COPY", FontDefault, 0, RECEIPTLINECOUNT)
-                                            FillEJournalContent("SI No.: " & Format(SINumber, S_SIFormat) & " | CUSTOMERS COPY")
+                                            FillEJournalContent("SI No.: " & Format(SINumber, S_SIFormat) & " | CUSTOMERS COPY", {}, "S", False, True)
                                         Else
                                             SimpleTextDisplay(sender, e, "SI No.: " & Format(SINumber, S_SIFormat) & " | REPRINT COPY", FontDefault, 0, RECEIPTLINECOUNT)
-                                            FillEJournalContent("SI No.: " & Format(SINumber, S_SIFormat) & " | REPRINT COPY")
+                                            FillEJournalContent("SI No.: " & Format(SINumber, S_SIFormat) & " | REPRINT COPY", {}, "S", False, True)
                                         End If
                                     End If
 
                                     RECEIPTLINECOUNT += 10
                                     SimpleTextDisplay(sender, e, "Cashier: " & reader("crew_id") & " " & returnfullname(reader("crew_id")), FontDefault, 0, RECEIPTLINECOUNT)
-                                    FillEJournalContent("Cashier: " & reader("crew_id") & " " & returnfullname(reader("crew_id")))
+                                    FillEJournalContent("Cashier: " & reader("crew_id") & " " & returnfullname(reader("crew_id")), {}, "S", False, True)
                                     RECEIPTLINECOUNT += 10
                                     SimpleTextDisplay(sender, e, "Date: " & reader("created_at"), FontDefault, 0, RECEIPTLINECOUNT)
-                                    FillEJournalContent("Date: " & reader("created_at"))
+                                    FillEJournalContent("Date: " & reader("created_at"), {}, "S", False, True)
                                     RECEIPTLINECOUNT += 10
                                     PrintCenterStars(sender, e, FontDefault, RECEIPTLINECOUNT + 25)
-                                    FillEJournalContent("*************************************")
+                                    FillEJournalContent("*************************************", {}, "C", True, True)
                                     RECEIPTLINECOUNT += 10
                                     CenterTextDisplay(sender, e, SalesInvoiceHeader, FontDefaultBold, RECEIPTLINECOUNT + 23)
-                                    FillEJournalContent(SalesInvoiceHeader)
+                                    FillEJournalContent(SalesInvoiceHeader, {}, "C", True, True)
                                     RECEIPTLINECOUNT += 10
                                     PrintCenterStars(sender, e, FontDefault, RECEIPTLINECOUNT + 25)
-                                    FillEJournalContent("*************************************")
+                                    FillEJournalContent("*************************************", {}, "C", True, True)
                                     RECEIPTLINECOUNT += 10
                                     PrintSmallLine(sender, e, FontDefaultLine, RECEIPTLINECOUNT)
-                                    FillEJournalContent("------------------------------------------------------------")
+                                    FillEJournalContent("------------------------------------------------------------", {}, "C", True, True)
                                     RECEIPTLINECOUNT += 10
                                 End While
                             End If
                         End Using
                     Else
                         PrintSmallLine(sender, e, FontDefaultLine, RECEIPTLINECOUNT)
-                        FillEJournalContent("------------------------------------------------------------")
+                        FillEJournalContent("------------------------------------------------------------", {}, "C", True, True)
                         RECEIPTLINECOUNT += 10
 
                         If VoidReturn Then
                             SimpleTextDisplay(sender, e, "SI No.: " & SiNumberToString & " | CUSTOMERS COPY", FontDefault, 0, RECEIPTLINECOUNT)
-                            FillEJournalContent("SI No.: " & SiNumberToString & " | CUSTOMERS COPY")
+                            FillEJournalContent("SI No.: " & SiNumberToString & " | CUSTOMERS COPY", {}, "S", False, True)
                         Else
                             If .Reprint = 1 Then
                                 SimpleTextDisplay(sender, e, "SI No.: " & SiNumberToString & " | CUSTOMERS COPY", FontDefault, 0, RECEIPTLINECOUNT)
-                                FillEJournalContent("SI No.: " & SiNumberToString & " | CUSTOMERS COPY")
+                                FillEJournalContent("SI No.: " & SiNumberToString & " | CUSTOMERS COPY", {}, "S", False, True)
                             Else
                                 SimpleTextDisplay(sender, e, "SI No.: " & SiNumberToString & " | REPRINT COPY", FontDefault, 0, RECEIPTLINECOUNT)
-                                FillEJournalContent("SI No.: " & SiNumberToString & " | REPRINT COPY")
+                                FillEJournalContent("SI No.: " & SiNumberToString & " | REPRINT COPY", {}, "S", False, True)
                             End If
                         End If
                         RECEIPTLINECOUNT += 10
-                        SimpleTextDisplay(sender, e, "Cashier: " & ClientCrewID & " " & returnfullname(where:=ClientCrewID), FontDefault, 0, RECEIPTLINECOUNT)
-                        FillEJournalContent("Cashier: " & ClientCrewID & " " & returnfullname(where:=ClientCrewID))
+                        Dim Cashier = "Cashier: " & ClientCrewID & " " & returnfullname(where:=ClientCrewID)
+                        SimpleTextDisplay(sender, e, Cashier, FontDefault, 0, RECEIPTLINECOUNT)
+                        FillEJournalContent(Cashier, {}, "S", False, True)
                         RECEIPTLINECOUNT += 10
                         SimpleTextDisplay(sender, e, "Date: " & .INSERTTHISDATE, FontDefault, 0, RECEIPTLINECOUNT)
-                        FillEJournalContent("Date: " & .INSERTTHISDATE)
+                        FillEJournalContent("Date: " & .INSERTTHISDATE, {}, "S", False, True)
                         RECEIPTLINECOUNT += 10
                         PrintCenterStars(sender, e, FontDefault, RECEIPTLINECOUNT + 25)
-                        FillEJournalContent("*************************************")
+                        FillEJournalContent("*************************************", {}, "C", True, True)
                         RECEIPTLINECOUNT += 10
                         CenterTextDisplay(sender, e, SalesInvoiceHeader, FontDefaultBold, RECEIPTLINECOUNT + 23)
-                        FillEJournalContent(SalesInvoiceHeader)
+                        FillEJournalContent(SalesInvoiceHeader, {}, "C", False, True)
                         RECEIPTLINECOUNT += 10
                         PrintCenterStars(sender, e, FontDefault, RECEIPTLINECOUNT + 25)
-                        FillEJournalContent("*************************************")
+                        FillEJournalContent("*************************************", {}, "C", True, True)
                         RECEIPTLINECOUNT += 10
                         PrintSmallLine(sender, e, FontDefaultLine, RECEIPTLINECOUNT)
-                        FillEJournalContent("------------------------------------------------------------")
+                        FillEJournalContent("------------------------------------------------------------", {}, "C", True, True)
                         RECEIPTLINECOUNT += 10
                     End If
                 End With
@@ -647,7 +651,7 @@ Module publicfunctions
                 For i As Integer = 0 To Dt.Rows.Count - 1 Step +1
                     If Dt(i)(1).ToString = "Header" Then
                         CenterTextDisplay(sender, e, Dt(i)(0), FontDefault, RECEIPTLINECOUNT)
-                        FillEJournalContent(Dt(i)(0))
+                        FillEJournalContent(Dt(i)(0), {}, "C", True, True)
                         RECEIPTLINECOUNT += 10
                     End If
                 Next
@@ -683,302 +687,300 @@ Module publicfunctions
             End If
 
             SimpleTextDisplay(sender, e, XREADORZREAD, FontDefaultBold, 0, RECEIPTLINECOUNT)
-            FillEJournalContent(XREADORZREAD)
+            FillEJournalContent(XREADORZREAD, {}, "S", True, True)
             RECEIPTLINECOUNT += 10
             PrintSmallLine(sender, e, FontDefaultLine, RECEIPTLINECOUNT)
-            FillEJournalContent("------------------------------------------------------------")
+            FillEJournalContent("------------------------------------------------------------", {}, "C", True, True)
             RECEIPTLINECOUNT += 10
             SimpleTextDisplay(sender, e, "DESCRIPTION", FontDefaultBold, 0, RECEIPTLINECOUNT)
             SimpleTextDisplay(sender, e, "QTY/AMOUNT", FontDefaultBold, 130 + BodySpacing, RECEIPTLINECOUNT)
-            FillEJournalContent("DESCRIPTION                    QTY/AMOUNT")
+            FillEJournalContent("DESCRIPTION                    QTY/AMOUNT", {"DESCRIPTION", " QTY/AMOUNT"}, "LR", False, False)
             RECEIPTLINECOUNT += 10
             PrintSmallLine(sender, e, FontDefaultLine, RECEIPTLINECOUNT)
-            FillEJournalContent("------------------------------------------------------------")
+            FillEJournalContent("------------------------------------------------------------", {}, "C", True, True)
             RECEIPTLINECOUNT += 30
             RightToLeftDisplay(sender, e, RECEIPTLINECOUNT, "TERMINAL NO.", S_Terminal_No, FontDefault, 5, 0)
-            FillEJournalContent("TERMINAL NO.          " & S_Terminal_No)
+            FillEJournalContent("TERMINAL NO.          " & S_Terminal_No, {"TERMINAL NO.", S_Terminal_No}, "LR", True, False)
             RECEIPTLINECOUNT += 10
             RightToLeftDisplay(sender, e, RECEIPTLINECOUNT, "GROSS", NUMBERFORMAT(ZXGross), FontDefault, 5, 0)
-            FillEJournalContent("GROSS.         " & NUMBERFORMAT(ZXGross))
+            FillEJournalContent("GROSS         " & NUMBERFORMAT(ZXGross), {"GROSS", NUMBERFORMAT(ZXGross)}, "LR", False, False)
             RECEIPTLINECOUNT += 10
-            RightToLeftDisplay(sender, e, RECEIPTLINECOUNT, "LESS VAT (VE)", ZXLessVat, FontDefault, 5, 0)
-            FillEJournalContent("LESS VAT (VE)         " & ZXLessVat)
+            RightToLeftDisplay(sender, e, RECEIPTLINECOUNT, "LESS VAT (VE)", NUMBERFORMAT(ZXLessVat), FontDefault, 5, 0)
+            FillEJournalContent("LESS VAT (VE)         " & ZXLessVat, {"LESS VAT (VE)", NUMBERFORMAT(ZXLessVat)}, "LR", False, False)
             RECEIPTLINECOUNT += 10
             RightToLeftDisplay(sender, e, RECEIPTLINECOUNT, "LESS VAT DIPLOMAT", "0.00", FontDefault, 5, 0)
-            FillEJournalContent("LESS VAT DIPLOMAT         0.00")
+            FillEJournalContent("LESS VAT DIPLOMAT         0.00", {"LESS VAT DIPLOMAT", "0.00"}, "LR", False, False)
             RECEIPTLINECOUNT += 10
             RightToLeftDisplay(sender, e, RECEIPTLINECOUNT, "LESS VAT (OTHER)", NUMBERFORMAT(ZXLessVatOthers), FontDefault, 5, 0)
-            FillEJournalContent("LESS VAT          0.00")
+            FillEJournalContent("LESS VAT (OTHER)          0.00", {"LESS VAT (OTHER)", "0.00"}, "LR", False, False)
             RECEIPTLINECOUNT += 10
-            RightToLeftDisplay(sender, e, RECEIPTLINECOUNT, "ADD VAT", "0.00", FontDefault, 5, 0)
-            FillEJournalContent("ADD VAT          0.00")
+            RightToLeftDisplay(sender, e, RECEIPTLINECOUNT, "ADD VAT", NUMBERFORMAT(ZXVatAmount), FontDefault, 5, 0)
+            FillEJournalContent("ADD VAT          0.00", {"ADD VAT", NUMBERFORMAT(ZXVatAmount)}, "LR", False, False)
             RECEIPTLINECOUNT += 10
             RightToLeftDisplay(sender, e, RECEIPTLINECOUNT, "DAILY SALES", NUMBERFORMAT(ZXDailySales), FontDefault, 5, 0)
-            FillEJournalContent("DAILY SALES          " & NUMBERFORMAT(ZXDailySales))
+            FillEJournalContent("DAILY SALES          " & NUMBERFORMAT(ZXDailySales), {"DAILY SALES", NUMBERFORMAT(ZXDailySales)}, "LR", False, False)
             RECEIPTLINECOUNT += 20
-            FillEJournalContent("")
-            RightToLeftDisplay(sender, e, RECEIPTLINECOUNT, "VAT AMOUNT", ZXVatAmount, FontDefault, 5, 0)
-            FillEJournalContent("VAT AMOUNT          " & ZXVatAmount)
+            FillEJournalContent("", {}, "C", True, True)
+            RightToLeftDisplay(sender, e, RECEIPTLINECOUNT, "VAT AMOUNT", NUMBERFORMAT(ZXVatAmount), FontDefault, 5, 0)
+            FillEJournalContent("VAT AMOUNT          " & NUMBERFORMAT(ZXVatAmount), {"VAT AMOUNT", NUMBERFORMAT(ZXVatAmount)}, "LR", False, False)
             RECEIPTLINECOUNT += 10
             RightToLeftDisplay(sender, e, RECEIPTLINECOUNT, "LOCAL GOV'T TAX", "0.00", FontDefault, 5, 0)
-            FillEJournalContent("LOCAL GOV'T TAX          0.00")
+            FillEJournalContent("LOCAL GOV'T TAX          0.00", {"LOCAL GOV'T TAX", "0.00"}, "LR", False, False)
             RECEIPTLINECOUNT += 10
             RightToLeftDisplay(sender, e, RECEIPTLINECOUNT, "VATABLE SALES", NUMBERFORMAT(ZXVatableSales), FontDefault, 5, 0)
-            FillEJournalContent("VATABLE SALES          " & NUMBERFORMAT(ZXVatableSales))
+            FillEJournalContent("VATABLE SALES          " & NUMBERFORMAT(ZXVatableSales), {"VATABLE SALES", NUMBERFORMAT(ZXVatableSales)}, "LR", False, False)
             RECEIPTLINECOUNT += 10
             RightToLeftDisplay(sender, e, RECEIPTLINECOUNT, "ZERO RATED SALES", NUMBERFORMAT(ZXZeroRatedSales), FontDefault, 5, 0)
-            FillEJournalContent("ZERO RATED SALES          " & NUMBERFORMAT(ZXZeroRatedSales))
+            FillEJournalContent("ZERO RATED SALES          " & NUMBERFORMAT(ZXZeroRatedSales), {"ZERO RATED SALES", NUMBERFORMAT(ZXZeroRatedSales)}, "LR", False, False)
             RECEIPTLINECOUNT += 10
             RightToLeftDisplay(sender, e, RECEIPTLINECOUNT, "VAT EXEMPT SALES", NUMBERFORMAT(ZXVatExemptSales), FontDefault, 5, 0)
-            FillEJournalContent("VAT EXEMPT SALES          " & NUMBERFORMAT(ZXVatExemptSales))
+            FillEJournalContent("VAT EXEMPT SALES          " & NUMBERFORMAT(ZXVatExemptSales), {"VAT EXEMPT SALES", NUMBERFORMAT(ZXVatExemptSales)}, "LR", False, False)
             RECEIPTLINECOUNT += 10
             RightToLeftDisplay(sender, e, RECEIPTLINECOUNT, "LESS DISC (VE)", NUMBERFORMAT(ZXLessDiscVE), FontDefault, 5, 0)
-            FillEJournalContent("LESS DISC (VE)          " & NUMBERFORMAT(ZXLessDiscVE))
+            FillEJournalContent("LESS DISC (VE)          " & NUMBERFORMAT(ZXLessDiscVE), {"LESS DISC (VE)", NUMBERFORMAT(ZXLessDiscVE)}, "LR", False, False)
             RECEIPTLINECOUNT += 10
             RightToLeftDisplay(sender, e, RECEIPTLINECOUNT, "NET SALES", NUMBERFORMAT(ZXNetSales), FontDefault, 5, 0)
-            FillEJournalContent("NET SALES          " & NUMBERFORMAT(ZXNetSales))
+            FillEJournalContent("NET SALES          " & NUMBERFORMAT(ZXNetSales), {"NET SALES", NUMBERFORMAT(ZXNetSales)}, "LR", False, False)
             RECEIPTLINECOUNT += 20
 
             RightToLeftDisplay(sender, e, RECEIPTLINECOUNT, "CASH TOTAL", NUMBERFORMAT(ZXDailySales), FontDefault, 5, 0)
-            FillEJournalContent("CASH TOTAL          " & NUMBERFORMAT(ZXDailySales))
+            FillEJournalContent("CASH TOTAL          " & NUMBERFORMAT(ZXDailySales), {"CASH TOTAL", NUMBERFORMAT(ZXDailySales)}, "LR", False, False)
             RECEIPTLINECOUNT += 10
             RightToLeftDisplay(sender, e, RECEIPTLINECOUNT, "CREDIT CARD", "N/A", FontDefault, 5, 0)
-            FillEJournalContent("CREDIT CARD          N/A")
+            FillEJournalContent("CREDIT CARD          N/A", {"CREDIT CARD", "N/A"}, "LR", False, False)
             RECEIPTLINECOUNT += 10
             RightToLeftDisplay(sender, e, RECEIPTLINECOUNT, "DEBIT CARD", "N/A", FontDefault, 5, 0)
-            FillEJournalContent("DEBIT CARD          N/A")
+            FillEJournalContent("DEBIT CARD          N/A", {"DEBIT CARD", "N/A"}, "LR", False, False)
             RECEIPTLINECOUNT += 10
             RightToLeftDisplay(sender, e, RECEIPTLINECOUNT, "MISC/CHEQUES", "N/A", FontDefault, 5, 0)
-            FillEJournalContent("MISC/CHEQUES          N/A")
+            FillEJournalContent("MISC/CHEQUES          N/A", {"MISC/CHEQUES", "N/A"}, "LR", False, False)
             RECEIPTLINECOUNT += 10
             RightToLeftDisplay(sender, e, RECEIPTLINECOUNT, "GIFT CARD(GC)", NUMBERFORMAT(ZXGiftCard), FontDefault, 5, 0)
-            FillEJournalContent("GIFT CARD(GC)          " & NUMBERFORMAT(ZXGiftCard))
+            FillEJournalContent("GIFT CARD(GC)          " & NUMBERFORMAT(ZXGiftCard), {"GIFT CARD(GC)", NUMBERFORMAT(ZXGiftCard)}, "LR", False, False)
             RECEIPTLINECOUNT += 10
             RightToLeftDisplay(sender, e, RECEIPTLINECOUNT, "GIFT CARD SUM", NUMBERFORMAT(ZXGiftCardSum), FontDefault, 5, 0)
-            FillEJournalContent("GIFT CARD SUM          " & NUMBERFORMAT(ZXGiftCardSum))
+            FillEJournalContent("GIFT CARD SUM          " & NUMBERFORMAT(ZXGiftCardSum), {"GIFT CARD SUM", NUMBERFORMAT(ZXGiftCardSum)}, "LR", False, False)
             RECEIPTLINECOUNT += 10
             RightToLeftDisplay(sender, e, RECEIPTLINECOUNT, "A/R", "N/A", FontDefault, 5, 0)
-            FillEJournalContent("A/R          N/A")
+            FillEJournalContent("A/R          N/A", {"A/R", "N/A"}, "LR", False, False)
             RECEIPTLINECOUNT += 10
             RightToLeftDisplay(sender, e, RECEIPTLINECOUNT, "TOTAL EXPENSES", NUMBERFORMAT(ZXTotalExpenses), FontDefault, 5, 0)
-            FillEJournalContent("TOTAL EXPENSES         " & NUMBERFORMAT(ZXTotalExpenses))
+            FillEJournalContent("TOTAL EXPENSES         " & NUMBERFORMAT(ZXTotalExpenses), {"TOTAL EXPENSES", NUMBERFORMAT(ZXTotalExpenses)}, "LR", False, False)
             RECEIPTLINECOUNT += 10
             RightToLeftDisplay(sender, e, RECEIPTLINECOUNT, "OTHERS", "N/A", FontDefault, 5, 0)
-            FillEJournalContent("OTHERS         N/A")
+            FillEJournalContent("OTHERS         N/A", {"OTHERS", "N/A"}, "LR", False, False)
             RECEIPTLINECOUNT += 10
 
             If ZXBegBalance = 0 Then
                 RightToLeftDisplay(sender, e, RECEIPTLINECOUNT, "BEG.BALANCE", "0.00", FontDefault, 5, 0)
-                FillEJournalContent("BEG.BALANCE         0.00")
+                FillEJournalContent("BEG.BALANCE         0.00", {"BEG.BALANCE", "0.00"}, "LR", False, False)
                 RECEIPTLINECOUNT += 10
             Else
                 RightToLeftDisplay(sender, e, RECEIPTLINECOUNT, "BEG.BALANCE", NUMBERFORMAT(Double.Parse(ZXBegBalance)), FontDefault, 5, 0)
-                FillEJournalContent("BEG.BALANCE          " & NUMBERFORMAT(Double.Parse(ZXBegBalance)))
+                FillEJournalContent("BEG.BALANCE          " & NUMBERFORMAT(Double.Parse(ZXBegBalance)), {"BEG.BALANCE", NUMBERFORMAT(Double.Parse(ZXBegBalance))}, "LR", False, False)
                 RECEIPTLINECOUNT += 10
             End If
 
             RightToLeftDisplay(sender, e, RECEIPTLINECOUNT, "DEPOSIT", NUMBERFORMAT(ZXDeposits), FontDefault, 5, 0)
-            FillEJournalContent("DEPOSIT          " & NUMBERFORMAT(ZXDeposits))
+            FillEJournalContent("DEPOSIT          " & NUMBERFORMAT(ZXDeposits), {"DEPOSIT", NUMBERFORMAT(ZXDeposits)}, "LR", False, False)
             RECEIPTLINECOUNT += 10
             RightToLeftDisplay(sender, e, RECEIPTLINECOUNT, "CASH IN DRAWER", NUMBERFORMAT(ZXCashInDrawer), FontDefault, 5, 0)
-            FillEJournalContent("CASH IN DRAWER          " & NUMBERFORMAT(ZXCashInDrawer))
+            FillEJournalContent("CASH IN DRAWER          " & NUMBERFORMAT(ZXCashInDrawer), {"CASH IN DRAWER", NUMBERFORMAT(ZXCashInDrawer)}, "LR", False, False)
             RECEIPTLINECOUNT += 20
-            FillEJournalContent("")
+            FillEJournalContent("", {}, "C", True, True)
             RightToLeftDisplay(sender, e, RECEIPTLINECOUNT, "CASHLESS", NUMBERFORMAT(ZXCashlessTotal), FontDefault, 5, 0)
-            FillEJournalContent("CASHLESS          " & NUMBERFORMAT(ZXCashlessTotal))
+            FillEJournalContent("CASHLESS          " & NUMBERFORMAT(ZXCashlessTotal), {"CASHLESS", NUMBERFORMAT(ZXCashlessTotal)}, "LR", False, False)
             RECEIPTLINECOUNT += 10
             RightToLeftDisplay(sender, e, RECEIPTLINECOUNT, "GCASH", NUMBERFORMAT(ZXGcash), FontDefault, 5, 0)
-            FillEJournalContent("GCASH          " & NUMBERFORMAT(ZXGcash))
+            FillEJournalContent("GCASH          " & NUMBERFORMAT(ZXGcash), {"GCASH", NUMBERFORMAT(ZXGcash)}, "LR", False, False)
             RECEIPTLINECOUNT += 10
             RightToLeftDisplay(sender, e, RECEIPTLINECOUNT, "PAYMAYA", NUMBERFORMAT(ZXPaymaya), FontDefault, 5, 0)
-            FillEJournalContent("PAYMAYA          " & NUMBERFORMAT(ZXPaymaya))
+            FillEJournalContent("PAYMAYA          " & NUMBERFORMAT(ZXPaymaya), {"PAYMAYA", NUMBERFORMAT(ZXPaymaya)}, "LR", False, False)
             RECEIPTLINECOUNT += 10
             RightToLeftDisplay(sender, e, RECEIPTLINECOUNT, "SHOPEE", NUMBERFORMAT(ZXShopeePay), FontDefault, 5, 0)
-            FillEJournalContent("SHOPEE          " & NUMBERFORMAT(ZXShopeePay))
+            FillEJournalContent("SHOPEE          " & NUMBERFORMAT(ZXShopeePay), {"SHOPEE", NUMBERFORMAT(ZXShopeePay)}, "LR", False, False)
             RECEIPTLINECOUNT += 10
             RightToLeftDisplay(sender, e, RECEIPTLINECOUNT, "FOODPANDA", NUMBERFORMAT(ZXFoodPanda), FontDefault, 5, 0)
-            FillEJournalContent("FOODPANDA          " & NUMBERFORMAT(ZXFoodPanda))
+            FillEJournalContent("FOODPANDA          " & NUMBERFORMAT(ZXFoodPanda), {"FOODPANDA", NUMBERFORMAT(ZXFoodPanda)}, "LR", False, False)
             RECEIPTLINECOUNT += 10
             RightToLeftDisplay(sender, e, RECEIPTLINECOUNT, "GRAB", NUMBERFORMAT(ZXGrabFood), FontDefault, 5, 0)
-            FillEJournalContent("GRAB          " & NUMBERFORMAT(ZXGrabFood))
+            FillEJournalContent("GRAB          " & NUMBERFORMAT(ZXGrabFood), {"GRAB", NUMBERFORMAT(ZXGrabFood)}, "LR", False, False)
             RECEIPTLINECOUNT += 10
-            RightToLeftDisplay(sender, e, RECEIPTLINECOUNT, "COMPLEMENTARY EXPENSES", NUMBERFORMAT(ZXRepExpense), FontDefault, 5, 0)
-            FillEJournalContent("COMPLEMENTARY EXPENSES          " & NUMBERFORMAT(ZXRepExpense))
+            RightToLeftDisplay(sender, e, RECEIPTLINECOUNT, "COMPLIMENTARY EXPENSES", NUMBERFORMAT(ZXRepExpense), FontDefault, 5, 0)
+            FillEJournalContent("COMPLIMENTARY EXPENSES          " & NUMBERFORMAT(ZXRepExpense), {"COMPLIMENTARY EXPENSES", NUMBERFORMAT(ZXRepExpense)}, "LR", False, False)
             RECEIPTLINECOUNT += 10
-            RightToLeftDisplay(sender, e, RECEIPTLINECOUNT, "OTHERS", ZXCashlessOthers, FontDefault, 5, 0)
-            FillEJournalContent("OTHERS          " & ZXCashlessOthers)
+            RightToLeftDisplay(sender, e, RECEIPTLINECOUNT, "OTHERS", NUMBERFORMAT(ZXCashlessOthers), FontDefault, 5, 0)
+            FillEJournalContent("OTHERS          " & NUMBERFORMAT(ZXCashlessOthers), {"OTHERS", NUMBERFORMAT(ZXCashlessOthers)}, "LR", False, False)
             RECEIPTLINECOUNT += 10
-            RightToLeftDisplay(sender, e, RECEIPTLINECOUNT, "ITEM VOID E/C", ZXItemVoidEC, FontDefault, 5, 0)
-            FillEJournalContent("ITEM VOID E/C          " & ZXItemVoidEC)
+            RightToLeftDisplay(sender, e, RECEIPTLINECOUNT, "ITEM VOID E/C", NUMBERFORMAT(ZXItemVoidEC), FontDefault, 5, 0)
+            FillEJournalContent("ITEM VOID E/C          " & NUMBERFORMAT(ZXItemVoidEC), {"ITEM VOID E/C", NUMBERFORMAT(ZXItemVoidEC)}, "LR", False, False)
             RECEIPTLINECOUNT += 10
-            RightToLeftDisplay(sender, e, RECEIPTLINECOUNT, "TRANSACTION VOID", ZXReturnsExchange, FontDefault, 5, 0)
-            FillEJournalContent("TRANSACTION VOID         " & ZXReturnsExchange)
+            RightToLeftDisplay(sender, e, RECEIPTLINECOUNT, "TRANSACTION VOID", NUMBERFORMAT(ZXReturnsExchange), FontDefault, 5, 0)
+            FillEJournalContent("TRANSACTION VOID         " & NUMBERFORMAT(ZXReturnsExchange), {"TRANSACTION VOID", NUMBERFORMAT(ZXReturnsExchange)}, "LR", False, False)
             RECEIPTLINECOUNT += 10
-            RightToLeftDisplay(sender, e, RECEIPTLINECOUNT, "TRANSACTION CANCEL", ZXTransactionCancel, FontDefault, 5, 0)
-            FillEJournalContent("TRANSACTION CANCEL         " & ZXTransactionCancel)
+            RightToLeftDisplay(sender, e, RECEIPTLINECOUNT, "TRANSACTION CANCEL", NUMBERFORMAT(ZXTransactionCancel), FontDefault, 5, 0)
+            FillEJournalContent("TRANSACTION CANCEL         " & NUMBERFORMAT(ZXTransactionCancel), {"TRANSACTION CANCEL", NUMBERFORMAT(ZXTransactionCancel)}, "LR", False, False)
             RECEIPTLINECOUNT += 10
             RightToLeftDisplay(sender, e, RECEIPTLINECOUNT, "DIMPLOMAT", "N/A", FontDefault, 5, 0)
-            FillEJournalContent("DIMPLOMAT         N/A")
+            FillEJournalContent("DIMPLOMAT         N/A", {"DIMPLOMAT", "N/A"}, "LR", False, False)
             RECEIPTLINECOUNT += 10
             RightToLeftDisplay(sender, e, RECEIPTLINECOUNT, "TOTAL DISCOUNTS", NUMBERFORMAT(ZXTotalDiscounts), FontDefault, 5, 0)
-            FillEJournalContent("TOTAL DISCOUNTS         " & NUMBERFORMAT(ZXTotalDiscounts))
+            FillEJournalContent("TOTAL DISCOUNTS         " & NUMBERFORMAT(ZXTotalDiscounts), {"TOTAL DISCOUNTS", NUMBERFORMAT(ZXTotalDiscounts)}, "LR", False, False)
             RECEIPTLINECOUNT += 10
             RightToLeftDisplay(sender, e, RECEIPTLINECOUNT, " - SENIOR CITIZEN", NUMBERFORMAT(ZXSeniorCitizen), FontDefault, 5, 0)
-            FillEJournalContent(" - SENIOR CITIZEN         " & NUMBERFORMAT(ZXSeniorCitizen))
+            FillEJournalContent(" - SENIOR CITIZEN         " & NUMBERFORMAT(ZXSeniorCitizen), {" - SENIOR CITIZEN", NUMBERFORMAT(ZXSeniorCitizen)}, "LR", False, False)
             RECEIPTLINECOUNT += 10
             RightToLeftDisplay(sender, e, RECEIPTLINECOUNT, " - PWD", NUMBERFORMAT(ZXPWD), FontDefault, 5, 0)
-            FillEJournalContent(" - PWD         " & NUMBERFORMAT(ZXPWD))
+            FillEJournalContent(" - PWD         " & NUMBERFORMAT(ZXPWD), {" -PWD", NUMBERFORMAT(ZXPWD)}, "LR", False, False)
             RECEIPTLINECOUNT += 10
             RightToLeftDisplay(sender, e, RECEIPTLINECOUNT, " - ATHLETE", NUMBERFORMAT(ZXAthlete), FontDefault, 5, 0)
-            FillEJournalContent(" - ATHLETE         " & NUMBERFORMAT(ZXAthlete))
-            'RECEIPTLINECOUNT += 10
-            'RightToLeftDisplay(sender, e, RECEIPTLINECOUNT, " - SINGLE PARENT", NUMBERFORMAT(ZXSingleParent), FontDefault, 5, 0)
+            FillEJournalContent(" - ATHLETE         " & NUMBERFORMAT(ZXAthlete), {" - ATHLETE", NUMBERFORMAT(ZXAthlete)}, "LR", False, False)
             RECEIPTLINECOUNT += 10
             RightToLeftDisplay(sender, e, RECEIPTLINECOUNT, " - OTHERS", "0.00", FontDefault, 5, 0)
-            FillEJournalContent(" - ATHLETE         0.00")
+            FillEJournalContent(" - OTHERS         0.00", {" - OTHERS", "0.00"}, "LR", False, False)
             RECEIPTLINECOUNT += 10
             RightToLeftDisplay(sender, e, RECEIPTLINECOUNT, "TAKE OUT CHARGE", "N/A", FontDefault, 5, 0)
-            FillEJournalContent("TAKE OUT CHARGE         N/A")
+            FillEJournalContent("TAKE OUT CHARGE         N/A", {"TAKE OUT CHARGE", "N/A"}, "LR", False, False)
             RECEIPTLINECOUNT += 10
             RightToLeftDisplay(sender, e, RECEIPTLINECOUNT, "DELIVERY CHARGE", "N/A", FontDefault, 5, 0)
-            FillEJournalContent("DELIVERY CHARGE         N/A")
+            FillEJournalContent("DELIVERY CHARGE         N/A", {"DELIVERY CHARGE", "N/A"}, "LR", False, False)
             RECEIPTLINECOUNT += 10
-            RightToLeftDisplay(sender, e, RECEIPTLINECOUNT, "RETURNS EXCHANGE", ZXReturnsExchange, FontDefault, 5, 0)
-            FillEJournalContent("RETURNS EXCHANGE         " & ZXReturnsExchange)
+            RightToLeftDisplay(sender, e, RECEIPTLINECOUNT, "RETURNS EXCHANGE", NUMBERFORMAT(ZXReturnsExchange), FontDefault, 5, 0)
+            FillEJournalContent("RETURNS EXCHANGE         " & NUMBERFORMAT(ZXReturnsExchange), {"RETURNS EXCHANGE", NUMBERFORMAT(ZXReturnsExchange)}, "LR", False, False)
             RECEIPTLINECOUNT += 10
             RightToLeftDisplay(sender, e, RECEIPTLINECOUNT, "RETURNS REFUND", NUMBERFORMAT(ZXReturnsRefund), FontDefault, 5, 0)
-            FillEJournalContent("RETURNS REFUND         " & NUMBERFORMAT(ZXReturnsRefund))
+            FillEJournalContent("RETURNS REFUND         " & NUMBERFORMAT(ZXReturnsRefund), {"RETURNS REFUND", NUMBERFORMAT(ZXReturnsRefund)}, "LR", False, False)
             RECEIPTLINECOUNT += 10
             RightToLeftDisplay(sender, e, RECEIPTLINECOUNT, "TOTAL QTY SOLD", ZXTotalQTYSold, FontDefault, 5, 0)
-            FillEJournalContent("TOTAL QTY SOLD         " & NUMBERFORMAT(ZXTotalQTYSold))
+            FillEJournalContent("TOTAL QTY SOLD         " & NUMBERFORMAT(ZXTotalQTYSold), {"TOTAL QTY SOLD", NUMBERFORMAT(ZXTotalQTYSold)}, "LR", False, False)
             RECEIPTLINECOUNT += 10
             RightToLeftDisplay(sender, e, RECEIPTLINECOUNT, "TOTAL TRANS. COUNT", ZXTotalTransactionCount, FontDefault, 5, 0)
-            FillEJournalContent("TOTAL TRANS. COUNT         " & NUMBERFORMAT(ZXTotalTransactionCount))
+            FillEJournalContent("TOTAL TRANS. COUNT         " & NUMBERFORMAT(ZXTotalTransactionCount), {"TOTAL TRANS. COUNT", NUMBERFORMAT(ZXTotalTransactionCount)}, "LR", False, False)
             RECEIPTLINECOUNT += 10
             RightToLeftDisplay(sender, e, RECEIPTLINECOUNT, "TOTAL GUEST", ZXTotalGuess, FontDefault, 5, 0)
-            FillEJournalContent("TOTAL GUEST         " & ZXTotalGuess)
+            FillEJournalContent("TOTAL GUEST         " & ZXTotalGuess, {"TOTAL GUEST", ZXTotalGuess}, "LR", False, False)
             RECEIPTLINECOUNT += 10
             RightToLeftDisplay(sender, e, RECEIPTLINECOUNT, "BEGINNING S.I NO.", ZXBegSINo, FontDefault, 5, 0)
-            FillEJournalContent("BEGINNING S.I NO.         " & ZXBegSINo)
+            FillEJournalContent("BEGINNING S.I NO.         " & ZXBegSINo, {"BEGINNING S.I NO.", ZXBegSINo}, "LR", False, False)
             RECEIPTLINECOUNT += 10
             RightToLeftDisplay(sender, e, RECEIPTLINECOUNT, "END S.I NO.", ZXEndSINo, FontDefault, 5, 0)
-            FillEJournalContent("END S.I NO.         " & ZXEndSINo)
+            FillEJournalContent("END S.I NO.         " & ZXEndSINo, {"END S.I NO.", ZXEndSINo}, "LR", False, False)
             RECEIPTLINECOUNT += 10
             RightToLeftDisplay(sender, e, RECEIPTLINECOUNT, "BEGINNING TRANS. NO.", ZXBegTransNo, FontDefault, 5, 0)
-            FillEJournalContent("BEGINNING TRANS. NO.         " & ZXBegTransNo)
+            FillEJournalContent("BEGINNING TRANS. NO.         " & ZXBegTransNo, {"BEGINNING TRANS. NO.", ZXBegTransNo}, "LR", False, False)
             RECEIPTLINECOUNT += 10
             RightToLeftDisplay(sender, e, RECEIPTLINECOUNT, "END TRANS. NO.", ZXEndTransNo, FontDefault, 5, 0)
-            FillEJournalContent("END TRANS. NO.         " & ZXEndTransNo)
+            FillEJournalContent("END TRANS. NO.         " & ZXEndTransNo, {"END TRANS. NO.", ZXEndTransNo}, "LR", False, False)
             RECEIPTLINECOUNT += 10
             RightToLeftDisplay(sender, e, RECEIPTLINECOUNT, "CURRENT TOTAL SALES", NUMBERFORMAT(ZXNetSales), FontDefault, 5, 0)
-            FillEJournalContent("CURRENT TOTAL SALES         " & NUMBERFORMAT(ZXNetSales))
+            FillEJournalContent("CURRENT TOTAL SALES         " & NUMBERFORMAT(ZXNetSales), {"CURRENT TOTAL SALES", NUMBERFORMAT(ZXNetSales)}, "LR", False, False)
             RECEIPTLINECOUNT += 10
             RightToLeftDisplay(sender, e, RECEIPTLINECOUNT, "OLD GRAND TOTAL", NUMBERFORMAT(S_OLDGRANDTOTAL), FontDefault, 5, 0)
-            FillEJournalContent("OLD GRAND TOTAL         " & NUMBERFORMAT(S_OLDGRANDTOTAL))
+            FillEJournalContent("OLD GRAND TOTAL         " & NUMBERFORMAT(S_OLDGRANDTOTAL), {"OLD GRAND TOTAL", NUMBERFORMAT(S_OLDGRANDTOTAL)}, "LR", False, False)
             RECEIPTLINECOUNT += 10
             RightToLeftDisplay(sender, e, RECEIPTLINECOUNT, "NEW GRAND TOTAL", NUMBERFORMAT(ZXNewGrandtotalSales), FontDefault, 5, 0)
-            FillEJournalContent("NEW GRAND TOTAL         " & NUMBERFORMAT(ZXNewGrandtotalSales))
+            FillEJournalContent("NEW GRAND TOTAL         " & NUMBERFORMAT(ZXNewGrandtotalSales), {"NEW GRAND TOTAL", NUMBERFORMAT(ZXNewGrandtotalSales)}, "LR", False, False)
             RECEIPTLINECOUNT += 10
 
             If XREADORZREAD = "Z-READ" Then
                 RightToLeftDisplay(sender, e, RECEIPTLINECOUNT, "RESET COUNTER", ZXResetCounter, FontDefault, 5, 0)
-                FillEJournalContent("RESET COUNTER         " & NUMBERFORMAT(ZXResetCounter))
+                FillEJournalContent("RESET COUNTER         " & NUMBERFORMAT(ZXResetCounter), {"RESET COUNTER", NUMBERFORMAT(ZXResetCounter)}, "LR", False, False)
                 RECEIPTLINECOUNT += 10
                 RightToLeftDisplay(sender, e, RECEIPTLINECOUNT, "Z-COUNTER", ZXZreadCounter, FontDefault, 5, 0)
-                FillEJournalContent("Z-COUNTER         " & NUMBERFORMAT(ZXZreadCounter))
+                FillEJournalContent("Z-COUNTER         " & NUMBERFORMAT(ZXZreadCounter), {"Z-COUNTER", NUMBERFORMAT(ZXZreadCounter)}, "LR", False, False)
                 RECEIPTLINECOUNT += 10
                 RightToLeftDisplay(sender, e, RECEIPTLINECOUNT, "RE-PRINT COUNT: ", ZXReprintCount, FontDefault, 5, 0)
-                FillEJournalContent("RE-PRINT COUNT:          " & ZXReprintCount)
+                FillEJournalContent("RE-PRINT COUNT:          " & ZXReprintCount, {"RE-PRINT COUNT: ", ZXReprintCount}, "LR", False, False)
             Else
                 RightToLeftDisplay(sender, e, RECEIPTLINECOUNT, "CASHIER", ZXCashier, FontDefault, 5, 0)
-                FillEJournalContent("CASHIER          " & ZXCashier)
+                FillEJournalContent("CASHIER          " & ZXCashier, {"CASHIER", ZXCashier}, "LR", False, False)
             End If
 
             PrintSmallLine(sender, e, FontDefaultLine, RECEIPTLINECOUNT)
-            FillEJournalContent("------------------------------------------------------------")
+            FillEJournalContent("------------------------------------------------------------", {}, "C", True, True)
             RECEIPTLINECOUNT += 10
             SimpleTextDisplay(sender, e, "SALES BY CLASS", FontDefault, 0, RECEIPTLINECOUNT)
-            FillEJournalContent("SALES BY CLASS")
+            FillEJournalContent("SALES BY CLASS", {}, "S", False, True)
             RECEIPTLINECOUNT += 30
             RightToLeftDisplay(sender, e, RECEIPTLINECOUNT, "ADD ONS", ZXAddOns, FontDefault, 5, 0)
-            FillEJournalContent("ADD ONS          " & ZXAddOns)
+            FillEJournalContent("ADD ONS          " & ZXAddOns, {"ADD ONS", ZXAddOns}, "LR", False, False)
             RECEIPTLINECOUNT += 10
             RightToLeftDisplay(sender, e, RECEIPTLINECOUNT, "FAMOUS BLENDS", ZXFamousBlends, FontDefault, 5, 0)
-            FillEJournalContent("FAMOUS BLENDS          " & ZXFamousBlends)
+            FillEJournalContent("FAMOUS BLENDS          " & ZXFamousBlends, {"FAMOUS BLENDS", ZXFamousBlends}, "LR", False, False)
             RECEIPTLINECOUNT += 10
             RightToLeftDisplay(sender, e, RECEIPTLINECOUNT, "COMBO", ZXCombo, FontDefault, 5, 0)
-            FillEJournalContent("COMBO          " & ZXCombo)
+            FillEJournalContent("COMBO          " & ZXCombo, {"COMBO", ZXCombo}, "LR", False, False)
             RECEIPTLINECOUNT += 10
             RightToLeftDisplay(sender, e, RECEIPTLINECOUNT, "PERFECT COMBINATION", ZXPerfectCombination, FontDefault, 5, 0)
-            FillEJournalContent("PERFECT COMBINATION          " & ZXPerfectCombination)
+            FillEJournalContent("PERFECT COMBINATION          " & ZXPerfectCombination, {"PERFECT COMBINATION", ZXPerfectCombination}, "LR", False, False)
             RECEIPTLINECOUNT += 10
             RightToLeftDisplay(sender, e, RECEIPTLINECOUNT, "PREMIUM LINE", ZXPremium, FontDefault, 5, 0)
-            FillEJournalContent("PREMIUM LINE          " & ZXPremium)
+            FillEJournalContent("PREMIUM LINE          " & ZXPremium, {"PREMIUM LINE", ZXPremium}, "LR", False, False)
             RECEIPTLINECOUNT += 10
             RightToLeftDisplay(sender, e, RECEIPTLINECOUNT, "SAVORY", ZXSavoury, FontDefault, 5, 0)
-            FillEJournalContent("SAVORY          " & ZXSavoury)
+            FillEJournalContent("SAVORY          " & ZXSavoury, {"SAVORY", ZXSavoury}, "LR", False, False)
             RECEIPTLINECOUNT += 10
             RightToLeftDisplay(sender, e, RECEIPTLINECOUNT, "SIMPY PERFECT", ZXSimplyPerfect, FontDefault, 5, 0)
-            FillEJournalContent("SIMPY PERFECT          " & ZXSimplyPerfect)
+            FillEJournalContent("SIMPY PERFECT          " & ZXSimplyPerfect, {"SIMPY PERFECT", ZXSimplyPerfect}, "LR", False, False)
             RECEIPTLINECOUNT -= 10
 
             PrintSmallLine(sender, e, FontDefaultLine, RECEIPTLINECOUNT)
-            FillEJournalContent("------------------------------------------------------------")
+            FillEJournalContent("------------------------------------------------------------", {}, "C", True, True)
             RECEIPTLINECOUNT += 10
             SimpleTextDisplay(sender, e, "CASH BREAK DOWN", FontDefaultBold, 0, RECEIPTLINECOUNT)
-            FillEJournalContent("CASH BREAK DOWN")
+            FillEJournalContent("CASH BREAK DOWN", {}, "S", False, True)
             RECEIPTLINECOUNT += 10
             SimpleTextDisplay(sender, e, "Bill type", FontDefault, 0, RECEIPTLINECOUNT)
             SimpleTextDisplay(sender, e, "Quantity", FontDefault, 80, RECEIPTLINECOUNT)
             SimpleTextDisplay(sender, e, "Total", FontDefault, 160, RECEIPTLINECOUNT)
-            FillEJournalContent("Bill type           Quantity           Total")
+            FillEJournalContent("Bill type           Quantity           Total", {"Bill type", "Quantity", "Total"}, "S3", False, False)
             RECEIPTLINECOUNT += 30
             RightToLeftDisplay(sender, e, RECEIPTLINECOUNT, "₱ 1000", NUMBERFORMAT(ZXThousandTotal), FontDefault, 5, 0)
             RightDisplay1(sender, e, RECEIPTLINECOUNT, "", ZXThousandQty, FontDefault, 0, 110)
-            FillEJournalContent("₱ 1000           " & ZXThousandQty & "           " & NUMBERFORMAT(ZXThousandTotal))
+            FillEJournalContent("₱ 1000           " & ZXThousandQty & "           " & NUMBERFORMAT(ZXThousandTotal), {"₱ 1000", ZXThousandQty, NUMBERFORMAT(ZXThousandTotal)}, "S3", False, False)
             RECEIPTLINECOUNT += 10
             RightToLeftDisplay(sender, e, RECEIPTLINECOUNT, "₱ 500", NUMBERFORMAT(ZXFiveHundredTotal), FontDefault, 5, 0)
             RightDisplay1(sender, e, RECEIPTLINECOUNT, "", ZXFiveHundredQty, FontDefault, 0, 110)
-            FillEJournalContent("₱ 500           " & ZXFiveHundredQty & "           " & NUMBERFORMAT(ZXFiveHundredTotal))
+            FillEJournalContent("₱ 500           " & ZXFiveHundredQty & "           " & NUMBERFORMAT(ZXFiveHundredTotal), {"₱ 500", ZXFiveHundredQty, NUMBERFORMAT(ZXFiveHundredTotal)}, "S3", False, False)
             RECEIPTLINECOUNT += 10
             RightToLeftDisplay(sender, e, RECEIPTLINECOUNT, "₱ 200", NUMBERFORMAT(ZXTwoHundredTotal), FontDefault, 5, 0)
             RightDisplay1(sender, e, RECEIPTLINECOUNT, "", ZXTwoHundredQty, FontDefault, 0, 110)
-            FillEJournalContent("₱ 200           " & ZXTwoHundredQty & "           " & NUMBERFORMAT(ZXTwoHundredTotal))
+            FillEJournalContent("₱ 200           " & ZXTwoHundredQty & "           " & NUMBERFORMAT(ZXTwoHundredTotal), {"₱ 200", ZXTwoHundredQty, NUMBERFORMAT(ZXTwoHundredTotal)}, "S3", False, False)
             RECEIPTLINECOUNT += 10
             RightToLeftDisplay(sender, e, RECEIPTLINECOUNT, "₱ 100", NUMBERFORMAT(ZXOneHundredTotal), FontDefault, 5, 0)
             RightDisplay1(sender, e, RECEIPTLINECOUNT, "", ZXOneHundredQty, FontDefault, 0, 110)
-            FillEJournalContent("₱ 100           " & ZXOneHundredQty & "           " & NUMBERFORMAT(ZXOneHundredTotal))
+            FillEJournalContent("₱ 100           " & ZXOneHundredQty & "           " & NUMBERFORMAT(ZXOneHundredTotal), {"₱ 100", ZXOneHundredQty, NUMBERFORMAT(ZXOneHundredTotal)}, "S3", False, False)
             RECEIPTLINECOUNT += 10
             RightToLeftDisplay(sender, e, RECEIPTLINECOUNT, "₱ 50", NUMBERFORMAT(ZXFiftyTotal), FontDefault, 5, 0)
             RightDisplay1(sender, e, RECEIPTLINECOUNT, "", ZXFiftyQty, FontDefault, 0, 110)
-            FillEJournalContent("₱ 50           " & ZXFiftyQty & "           " & NUMBERFORMAT(ZXFiftyTotal))
+            FillEJournalContent("₱ 50           " & ZXFiftyQty & "           " & NUMBERFORMAT(ZXFiftyTotal), {"₱ 50", ZXFiftyQty, NUMBERFORMAT(ZXFiftyTotal)}, "S3", False, False)
             RECEIPTLINECOUNT += 10
             RightToLeftDisplay(sender, e, RECEIPTLINECOUNT, "₱ 20", NUMBERFORMAT(ZXTwentyTotal), FontDefault, 5, 0)
             RightDisplay1(sender, e, RECEIPTLINECOUNT, "", ZXTwentyQty, FontDefault, 0, 110)
-            FillEJournalContent("₱ 20           " & ZXTwentyQty & "           " & NUMBERFORMAT(ZXTwentyTotal))
+            FillEJournalContent("₱ 20           " & ZXTwentyQty & "           " & NUMBERFORMAT(ZXTwentyTotal), {"₱ 20", ZXTwentyQty, NUMBERFORMAT(ZXTwentyTotal)}, "S3", False, False)
             RECEIPTLINECOUNT += 10
             RightToLeftDisplay(sender, e, RECEIPTLINECOUNT, "₱ 10", NUMBERFORMAT(ZXTenTotal), FontDefault, 5, 0)
             RightDisplay1(sender, e, RECEIPTLINECOUNT, "", ZXTenQty, FontDefault, 0, 110)
-            FillEJournalContent("₱ 10           " & ZXTenQty & "           " & NUMBERFORMAT(ZXTenTotal))
+            FillEJournalContent("₱ 10           " & ZXTenQty & "           " & NUMBERFORMAT(ZXTenTotal), {"₱ 10", ZXTenQty, NUMBERFORMAT(ZXTenTotal)}, "S3", False, False)
             RECEIPTLINECOUNT += 10
             RightToLeftDisplay(sender, e, RECEIPTLINECOUNT, "₱ 5", NUMBERFORMAT(ZXFiveTotal), FontDefault, 5, 0)
             RightDisplay1(sender, e, RECEIPTLINECOUNT, "", ZXFiveQty, FontDefault, 0, 110)
-            FillEJournalContent("₱ 5           " & ZXFiveQty & "           " & NUMBERFORMAT(ZXFiveTotal))
+            FillEJournalContent("₱ 5           " & ZXFiveQty & "           " & NUMBERFORMAT(ZXFiveTotal), {"₱ 5", ZXFiveQty, NUMBERFORMAT(ZXFiveTotal)}, "S3", False, False)
             RECEIPTLINECOUNT += 10
             RightToLeftDisplay(sender, e, RECEIPTLINECOUNT, "₱ 1", NUMBERFORMAT(ZXOneTotal), FontDefault, 5, 0)
             RightDisplay1(sender, e, RECEIPTLINECOUNT, "", ZXOneQty, FontDefault, 0, 110)
-            FillEJournalContent("₱ 1           " & ZXOneQty & "           " & NUMBERFORMAT(ZXOneTotal))
+            FillEJournalContent("₱ 1           " & ZXOneQty & "           " & NUMBERFORMAT(ZXOneTotal), {"₱ 1", ZXOneQty, NUMBERFORMAT(ZXOneTotal)}, "S3", False, False)
             RECEIPTLINECOUNT += 10
             RightToLeftDisplay(sender, e, RECEIPTLINECOUNT, "₱ .25", NUMBERFORMAT(ZXPointTwentyFiveTotal), FontDefault, 5, 0)
             RightDisplay1(sender, e, RECEIPTLINECOUNT, "", ZXPointTwentyFiveQty, FontDefault, 0, 110)
-            FillEJournalContent("₱ .25           " & ZXPointTwentyFiveQty & "           " & NUMBERFORMAT(ZXPointTwentyFiveTotal))
+            FillEJournalContent("₱ .25           " & ZXPointTwentyFiveQty & "           " & NUMBERFORMAT(ZXPointTwentyFiveTotal), {"₱ .25", ZXPointTwentyFiveQty, NUMBERFORMAT(ZXPointTwentyFiveTotal)}, "S3", False, False)
             RECEIPTLINECOUNT += 10
             RightToLeftDisplay(sender, e, RECEIPTLINECOUNT, "₱ .05", NUMBERFORMAT(ZXPointFiveTotal), FontDefault, 5, 0)
             RightDisplay1(sender, e, RECEIPTLINECOUNT, "", ZXPointFiveQty, FontDefault, 0, 110)
-            FillEJournalContent("₱ .05           " & ZXPointFiveQty & "           " & NUMBERFORMAT(ZXPointFiveTotal))
+            FillEJournalContent("₱ .05           " & ZXPointFiveQty & "           " & NUMBERFORMAT(ZXPointFiveTotal), {"₱ .05", ZXPointFiveQty, NUMBERFORMAT(ZXPointFiveTotal)}, "S3", False, False)
             RECEIPTLINECOUNT -= 10
             PrintSmallLine(sender, e, FontDefaultLine, RECEIPTLINECOUNT)
-            FillEJournalContent("------------------------------------------------------------")
+            FillEJournalContent("------------------------------------------------------------", {}, "C", True, True)
             RECEIPTLINECOUNT += 30
 
         Catch ex As Exception
@@ -1008,26 +1010,26 @@ Module publicfunctions
             If XREADORZREAD = "Z-READ" Then
                 RightToLeftDisplay(sender, e, RECEIPTLINECOUNT, "GRAND TOTAL", NUMBERFORMAT(GrandTotalCB), FontDefaultBold, 5, 0)
                 RightDisplay1(sender, e, RECEIPTLINECOUNT, "", TotalCBQuantity, FontDefaultBold, 0, 110)
-                FillEJournalContent("GRAND TOTAL          " & TotalCBQuantity)
+                FillEJournalContent("GRAND TOTAL          " & TotalCBQuantity, {"GRAND TOTAL", NUMBERFORMAT(GrandTotalCB)}, "LR", False, False)
                 RECEIPTLINECOUNT += 10
                 If Reptrint Then
                     With Reports
                         CenterTextDisplay(sender, e, Fromdate & " - " & ToDate, FontDefault, RECEIPTLINECOUNT)
-                        FillEJournalContent(Fromdate & " - " & ToDate)
+                        FillEJournalContent(Fromdate & " - " & ToDate, {}, "C", True, True)
                         SimpleTextDisplay(sender, e, "DATE GENERATED: " & FullDate24HR(), FontDefaultBold, 0, RECEIPTLINECOUNT)
-                        FillEJournalContent("DATE GENERATED: " & FullDate24HR())
+                        FillEJournalContent("DATE GENERATED: " & FullDate24HR(), {}, "C", True, True)
                     End With
                 Else
                     CenterTextDisplay(sender, e, S_Zreading & " " & Format(Now(), "HH:mm:ss"), FontDefault, RECEIPTLINECOUNT)
-                    FillEJournalContent(S_Zreading & " " & Format(Now(), "HH:mm:ss"))
+                    FillEJournalContent(S_Zreading & " " & Format(Now(), "HH:mm:ss"), {}, "C", False, True)
                 End If
             Else
                 RightToLeftDisplay(sender, e, RECEIPTLINECOUNT, "GRAND TOTAL", NUMBERFORMAT(GrandTotalCB), FontDefaultBold, 5, 0)
                 RightDisplay1(sender, e, RECEIPTLINECOUNT, "", TotalCBQuantity, FontDefaultBold, 0, 110)
-                FillEJournalContent("GRAND TOTAL          " & NUMBERFORMAT(GrandTotalCB))
+                FillEJournalContent("GRAND TOTAL          " & NUMBERFORMAT(GrandTotalCB), {"GRAND TOTAL", NUMBERFORMAT(GrandTotalCB)}, "LR", False, False)
                 RECEIPTLINECOUNT += 10
                 CenterTextDisplay(sender, e, S_Zreading & " " & Format(Now(), "HH:mm:ss"), FontDefault, RECEIPTLINECOUNT)
-                FillEJournalContent(S_Zreading & " " & Format(Now(), "HH:mm:ss"))
+                FillEJournalContent(S_Zreading & " " & Format(Now(), "HH:mm:ss"), {}, "C", False, False)
             End If
         Catch ex As Exception
             AuditTrail.LogToAuditTral("System", "Public Module: " & ex.ToString, "Critical")
@@ -1063,7 +1065,7 @@ Module publicfunctions
             SimpleTextDisplay(sender, e, "Item", FontDefault, 50, RECEIPTLINECOUNT)
             SimpleTextDisplay(sender, e, "Price", FontDefault, 80 + CategorySpacing, RECEIPTLINECOUNT)
             SimpleTextDisplay(sender, e, "Total", FontDefault, 140 + CategorySpacing, RECEIPTLINECOUNT)
-            FillEJournalContent("Qty        Item        Price        Total")
+            FillEJournalContent("Qty        Item        Price        Total", {"Qty", "Item", "Price", "Total"}, "S4", False, False)
             RECEIPTLINECOUNT += 35
 
             If VoidReturn Then
@@ -1079,44 +1081,44 @@ Module publicfunctions
                     If Dt(i)(14).ToString = "Add-Ons" Then
                         If Dt(i)(18).ToString = "Classic" Then
                             RightToLeftDisplay(sender, e, RECEIPTLINECOUNT, "     @" & Dt(i)(3), price, FontAddOn, 0, 40)
-                            FillEJournalContent("     @" & Dt(i)(3) & "     " & price)
+                            FillEJournalContent("     @" & Dt(i)(3) & "     " & price, {"     @" & Dt(i)(3), price}, "LR", False, False)
                         Else
                             SimpleTextDisplay(sender, e, Dt(i)(4), FontDefault, 0, RECEIPTLINECOUNT - 20)
                             SimpleTextDisplay(sender, e, Dt(i)(2), FontDefault, 50, RECEIPTLINECOUNT - 20)
                             RightDisplay1(sender, e, RECEIPTLINECOUNT, "", Dt(i)(5), FontDefault, 0, 122 + BodySpacing)
                             RightDisplay1(sender, e, RECEIPTLINECOUNT, "", price & "-", FontDefault, 0, 182 + BodySpacing)
-                            FillEJournalContent("        " & Dt(i)(4) & "           " & Dt(i)(2) & "     " & Dt(i)(5) & "       " & "-" & price)
+                            FillEJournalContent("        " & Dt(i)(4) & "           " & Dt(i)(2) & "     " & Dt(i)(5) & "       " & "-" & price, {Dt(i)(4), Dt(i)(2), Dt(i)(5), "-" & price}, "S4", False, False)
                         End If
                     Else
                         SimpleTextDisplay(sender, e, Dt(i)(4), FontDefault, 0, RECEIPTLINECOUNT - 20)
                         SimpleTextDisplay(sender, e, Dt(i)(2), FontDefault, 50, RECEIPTLINECOUNT - 20)
                         RightDisplay1(sender, e, RECEIPTLINECOUNT, "", Dt(i)(5), FontDefault, 0, 122 + BodySpacing)
                         RightDisplay1(sender, e, RECEIPTLINECOUNT, "", price & "-", FontDefault, 0, 182 + BodySpacing)
-                        FillEJournalContent(Dt(i)(4) & "           " & Dt(i)(2) & "           " & Dt(i)(5) & "       " & "-" & price)
+                        FillEJournalContent(Dt(i)(4) & "           " & Dt(i)(2) & "           " & Dt(i)(5) & "       " & "-" & price, {Dt(i)(4), Dt(i)(2), Dt(i)(5), "-" & price}, "S4", False, False)
                         If Dt(i)(17) > 0 Then
                             RECEIPTLINECOUNT += 10
                             RightToLeftDisplay(sender, e, RECEIPTLINECOUNT, "     + UPGRADE BRWN " & Dt(i)(17), "", FontAddOn, 0, 40)
-                            FillEJournalContent("     + UPGRADE BRWN " & Dt(i)(17))
+                            FillEJournalContent("     + UPGRADE BRWN " & Dt(i)(17), {}, "S", False, True)
                         End If
                         If Dt(i)(20) > 0 Then
                             RECEIPTLINECOUNT += 10
                             RightToLeftDisplay(sender, e, RECEIPTLINECOUNT, "    + " & Dt(i)(20) & " SENIOR DISCOUNT", "", FontAddOn, 0, 40)
-                            FillEJournalContent("    + " & Dt(i)(20) & " SENIOR DISCOUNT")
+                            FillEJournalContent("    + " & Dt(i)(20) & " SENIOR DISCOUNT", {}, "S", False, True)
                         End If
                         If Dt(i)(22) > 0 Then
                             RECEIPTLINECOUNT += 10
                             RightToLeftDisplay(sender, e, RECEIPTLINECOUNT, "    + " & Dt(i)(22) & " PWD DISCOUNT", "", FontAddOn, 0, 40)
-                            FillEJournalContent("    + " & Dt(i)(22) & " PWD DISCOUNT")
+                            FillEJournalContent("    + " & Dt(i)(22) & " PWD DISCOUNT", {}, "S", False, True)
                         End If
                         If Dt(i)(24) > 0 Then
                             RECEIPTLINECOUNT += 10
                             RightToLeftDisplay(sender, e, RECEIPTLINECOUNT, "    + " & Dt(i)(24) & "ATHLETE DISCOUNT", "", FontAddOn, 0, 40)
-                            FillEJournalContent("    + " & Dt(i)(24) & "ATHLETE DISCOUNT")
+                            FillEJournalContent("    + " & Dt(i)(24) & "ATHLETE DISCOUNT", {}, "S", False, True)
                         End If
                         If Dt(i)(26) > 0 Then
                             RECEIPTLINECOUNT += 10
                             RightToLeftDisplay(sender, e, RECEIPTLINECOUNT, "    + " & Dt(i)(26) & " S.P DISCOUNT", "", FontAddOn, 0, 40)
-                            FillEJournalContent("    + " & Dt(i)(26) & " S.P DISCOUNT")
+                            FillEJournalContent("    + " & Dt(i)(26) & " S.P DISCOUNT", {}, "S", False, True)
                         End If
                     End If
                     RECEIPTLINECOUNT += 10
@@ -1134,77 +1136,69 @@ Module publicfunctions
                             Dim NETSALES = reader("grosssales")
                             RECEIPTLINECOUNT += 20
                             RightToLeftDisplay(sender, e, RECEIPTLINECOUNT, "Total Sales: ", NETSALES & "-", FontDefault, 11, 0)
-                            FillEJournalContent("Total Sales:      " & "-" & NETSALES)
+                            FillEJournalContent("Total Sales:      " & "-" & NETSALES, {"Total Sales: ", NETSALES & "-"}, "LR", False, False)
                             RECEIPTLINECOUNT += 10
                             RightToLeftDisplay(sender, e, RECEIPTLINECOUNT, "Amount Net of VAT: ", reader("vatablesales") & "-", FontDefault, 11, 0)
-                            FillEJournalContent("Amount Net of VAT:     -" & reader("vatablesales"))
+                            FillEJournalContent("Amount Net of VAT:     -" & reader("vatablesales"), {"Amount Net of VAT: ", reader("vatablesales") & "-"}, "LR", False, False)
                             RECEIPTLINECOUNT += 10
 
                             If reader("discount_type") <> "N/A" Then
                                 RightToLeftDisplay(sender, e, RECEIPTLINECOUNT, "Less Discount: " & reader("discount_type"), reader("totaldiscount") & "-", FontDefault, 11, 0)
-                                FillEJournalContent("Less Discount: " & reader("discount_type") & "     -" & reader("totaldiscount"))
+                                FillEJournalContent("Less Discount: " & reader("discount_type") & "     -" & reader("totaldiscount"), {"Less Discount: " & reader("discount_type"), reader("totaldiscount") & "-"}, "LR", False, False)
                             Else
                                 RightToLeftDisplay(sender, e, RECEIPTLINECOUNT, "Discount: ", reader("totaldiscount") & "-", FontDefault, 11, 0)
-                                FillEJournalContent("Less Discount:      -" & reader("totaldiscount"))
+                                FillEJournalContent("Less Discount:      -" & reader("totaldiscount"), {"Discount: ", reader("totaldiscount") & "-"}, "LR", False, False)
                             End If
                             RECEIPTLINECOUNT += 10
 
                             If reader("zeroratedsales") > 0 Then
                                 RightToLeftDisplay(sender, e, RECEIPTLINECOUNT, "Less Vat: ", "0.00" & "-", FontDefault, 11, 0)
-                                FillEJournalContent("Less VAT:     -0.00")
+                                FillEJournalContent("Less VAT:     -0.00", {"Less Vat: ", "0.00" & "-"}, "LR", False, False)
                             Else
                                 RightToLeftDisplay(sender, e, RECEIPTLINECOUNT, "Less Vat: ", reader("lessvat") & "-", FontDefault, 11, 0)
-                                FillEJournalContent("Less VAT:     -" & reader("lessvat"))
+                                FillEJournalContent("Less VAT:     -" & reader("lessvat"), {"Less Vat: ", reader("lessvat") & "-"}, "LR", False, False)
                             End If
 
                             RECEIPTLINECOUNT += 10
                             RightToLeftDisplay(sender, e, RECEIPTLINECOUNT, "Amount Due: ", reader("amountdue") & "-", FontDefaultBold, 11, 0)
-                            FillEJournalContent("Amount Due:      -" & reader("amountdue"))
+                            FillEJournalContent("Amount Due:      -" & reader("amountdue"), {"Amount Due: ", reader("amountdue") & "-"}, "LR", False, False)
                             RECEIPTLINECOUNT += 10
-                            RightToLeftDisplay(sender, e, RECEIPTLINECOUNT, "Add VAT: ", "0.00-", FontDefaultBold, 11, 0)
-                            FillEJournalContent("Add VAT:      -0.00")
+                            RightToLeftDisplay(sender, e, RECEIPTLINECOUNT, "Add VAT: ", reader("vatpercentage") & "-", FontDefaultBold, 11, 0)
+                            FillEJournalContent("Add VAT:      -0.00", {"Add VAT: ", reader("vatpercentage") & "-"}, "LR", False, False)
                             RECEIPTLINECOUNT += 10
                             RightToLeftDisplay(sender, e, RECEIPTLINECOUNT, "Total Amount Due: ", reader("amountdue") & "-", FontDefaultBold, 11, 0)
-                            FillEJournalContent("Total Amount Due:      -" & reader("amountdue"))
+                            FillEJournalContent("Total Amount Due:      -" & reader("amountdue"), {"Total Amount Due: ", reader("amountdue") & "-"}, "LR", False, False)
                             RECEIPTLINECOUNT += 10
                             RightToLeftDisplay(sender, e, RECEIPTLINECOUNT, "Credit Sale: ", "0.00-", FontDefault, 11, 0)
-                            FillEJournalContent("Credit Sale:      -0.00")
+                            FillEJournalContent("Credit Sale:      -0.00", {"Credit Sale: ", "0.00-"}, "LR", False, False)
                             RECEIPTLINECOUNT += 10
                             RightToLeftDisplay(sender, e, RECEIPTLINECOUNT, "Change: ", "0.00-", FontDefault, 11, 0)
-                            FillEJournalContent("Change:      -0.00")
+                            FillEJournalContent("Change:      -0.00", {"Change: ", "0.00-"}, "LR", False, False)
                             PrintCenterStars(sender, e, FontDefault, RECEIPTLINECOUNT + 15)
-                            FillEJournalContent("*************************************")
+                            FillEJournalContent("*************************************", {}, "C", True, True)
                             PrintSmallLine(sender, e, FontDefaultLine, RECEIPTLINECOUNT)
-                            FillEJournalContent("------------------------------------------------------------")
+                            FillEJournalContent("------------------------------------------------------------", {}, "C", True, True)
                             RECEIPTLINECOUNT += 30
                             RightToLeftDisplay(sender, e, RECEIPTLINECOUNT, "Vatable Sales: ", reader("vatablesales") & "-", FontDefault, 11, 0)
-                            FillEJournalContent("Vatable Sales:     -" & reader("vatablesales"))
+                            FillEJournalContent("Vatable Sales:     -" & reader("vatablesales"), {"Vatable Sales: ", reader("vatablesales") & "-"}, "LR", False, False)
                             RECEIPTLINECOUNT += 10
                             RightToLeftDisplay(sender, e, RECEIPTLINECOUNT, "Vat Amount: ", reader("vatpercentage") & "-", FontDefault, 11, 0)
-                            FillEJournalContent("Vat Amount:     -" & reader("vatpercentage"))
+                            FillEJournalContent("Vat Amount:     -" & reader("vatpercentage"), {"Vat Amount: ", reader("vatpercentage") & "-"}, "LR", False, False)
                             RECEIPTLINECOUNT += 10
                             RightToLeftDisplay(sender, e, RECEIPTLINECOUNT, "Vat Exempt Sales: ", reader("vatexemptsales") & "-", FontDefault, 11, 0)
-                            FillEJournalContent("Vat Exempt Sales:     -" & reader("vatexemptsales"))
+                            FillEJournalContent("Vat Exempt Sales:     -" & reader("vatexemptsales"), {"Vat Exempt Sales: ", reader("vatexemptsales") & "-"}, "LR", False, False)
                             RECEIPTLINECOUNT += 10
 
                             RightToLeftDisplay(sender, e, RECEIPTLINECOUNT, "Less VAT: ", reader("lessvat") & "-", FontDefault, 11, 0)
-                            FillEJournalContent("Less VAT:     -" & reader("lessvat"))
-
-                            'If reader("zeroratedsales") > 0 Then
-                            '    RightToLeftDisplay(sender, e, RECEIPTLINECOUNT, "Less VAT: ", "0.00" & "-", FontDefault, 11, 0)
-                            '    FillEJournalContent("Less VAT:     -0.00")
-                            'Else
-                            '    RightToLeftDisplay(sender, e, RECEIPTLINECOUNT, "Less VAT: ", reader("lessvat") & "-", FontDefault, 11, 0)
-                            '    FillEJournalContent("Less VAT:     -" & reader("lessvat"))
-                            'End If
+                            FillEJournalContent("Less VAT:     -" & reader("lessvat"), {"Less VAT: ", reader("lessvat") & "-"}, "LR", False, False)
 
                             RECEIPTLINECOUNT += 10
                             RightToLeftDisplay(sender, e, RECEIPTLINECOUNT, "Zero Rated Sales: ", reader("zeroratedsales") & "-", FontDefault, 11, 0)
-                            FillEJournalContent("Zero Rated Sales:      -" & reader("zeroratedsales"))
+                            FillEJournalContent("Zero Rated Sales:      -" & reader("zeroratedsales"), {"Zero Rated Sales: ", reader("zeroratedsales") & "-"}, "LR", False, False)
                             PrintCenterStars(sender, e, FontDefault, RECEIPTLINECOUNT + 15)
-                            FillEJournalContent("*************************************")
+                            FillEJournalContent("*************************************", {}, "C", True, True)
                             PrintSmallLine(sender, e, FontDefaultLine, RECEIPTLINECOUNT)
-                            FillEJournalContent("------------------------------------------------------------")
+                            FillEJournalContent("------------------------------------------------------------", {}, "C", True, True)
                         End While
                     End If
                 End Using
@@ -1212,15 +1206,15 @@ Module publicfunctions
                 Dim Qty = sum("quantity", "loc_daily_transaction_details WHERE transaction_number = '" & TransactionNumber & "'")
                 RECEIPTLINECOUNT += 10
                 SimpleTextDisplay(sender, e, "Total Item/s: " & Qty, FontDefault, 0, RECEIPTLINECOUNT)
-                FillEJournalContent("Total Item/s: " & Qty)
+                FillEJournalContent("Total Item/s: " & Qty, {}, "S", False, True)
                 RECEIPTLINECOUNT += 10
                 SimpleTextDisplay(sender, e, "Store ID: " & GetStoreID, FontDefault, 0, RECEIPTLINECOUNT)
-                FillEJournalContent("Store ID: " & GetStoreID)
+                FillEJournalContent("Store ID: " & GetStoreID, {}, "S", False, True)
                 SimpleTextDisplay(sender, e, "Terminal No.: " & S_Terminal_No, FontDefault, 100, RECEIPTLINECOUNT)
-                FillEJournalContent("Terminal No.: " & S_Terminal_No)
+                FillEJournalContent("Terminal No.: " & S_Terminal_No, {}, "S", False, True)
                 RECEIPTLINECOUNT += 10
                 SimpleTextDisplay(sender, e, "Transaction Type: " & GetTransactionType, FontDefault, 0, RECEIPTLINECOUNT)
-                FillEJournalContent("Transaction Type: " & GetTransactionType)
+                FillEJournalContent("Transaction Type: " & GetTransactionType, {}, "S", False, True)
                 RECEIPTLINECOUNT += 10
 
 
@@ -1228,12 +1222,12 @@ Module publicfunctions
                 RECEIPTLINECOUNT += 15
 
                 CenterTextDisplay(sender, e, OfficialInvoiceRefundBody, FontDefaultItalic, RECEIPTLINECOUNT + 20)
-                FillEJournalContent(OfficialInvoiceRefundBody)
+                FillEJournalContent(OfficialInvoiceRefundBody, {}, "C", True, True)
                 RECEIPTLINECOUNT += 20
                 PrintCenterStars(sender, e, FontDefault, RECEIPTLINECOUNT + 15)
-                FillEJournalContent("*************************************")
+                FillEJournalContent("*************************************", {}, "C", True, True)
                 PrintSmallLine(sender, e, FontDefaultLine, RECEIPTLINECOUNT)
-                FillEJournalContent("------------------------------------------------------------")
+                FillEJournalContent("------------------------------------------------------------", {}, "C", True, True)
             Else
                 If ReprintSales Then
                     Dim ConnectionLocal As MySqlConnection = LocalhostConn()
@@ -1249,44 +1243,44 @@ Module publicfunctions
                             If Dt(i)(18).ToString = "Classic" Then
                                 RightDisplay1(sender, e, RECEIPTLINECOUNT, "", Dt(i)(3) & "@", FontDefault, 0, 82 + BodySpacing)
                                 RightDisplay1(sender, e, RECEIPTLINECOUNT, "", price, FontDefault, 0, 182 + BodySpacing)
-                                FillEJournalContent("     @" & Dt(i)(3) & "     " & price)
+                                FillEJournalContent("     @" & Dt(i)(3) & "     " & price, {}, "S", False, True)
                             Else
                                 SimpleTextDisplay(sender, e, Dt(i)(4), FontDefault, 0, RECEIPTLINECOUNT - 20)
                                 SimpleTextDisplay(sender, e, Dt(i)(2), FontDefault, 50, RECEIPTLINECOUNT - 20)
                                 RightDisplay1(sender, e, RECEIPTLINECOUNT, "", Dt(i)(5), FontDefault, 0, 122 + BodySpacing)
                                 RightDisplay1(sender, e, RECEIPTLINECOUNT, "", price, FontDefault, 0, 182 + BodySpacing)
-                                FillEJournalContent("        " & Dt(i)(4) & "           " & Dt(i)(2) & "           " & Dt(i)(5) & "       " & price)
+                                FillEJournalContent("        " & Dt(i)(4) & "           " & Dt(i)(2) & "           " & Dt(i)(5) & "       " & price, {Dt(i)(4), Dt(i)(2), Dt(i)(5), price}, "S4", False, False)
                             End If
                         Else
                             SimpleTextDisplay(sender, e, Dt(i)(4), FontDefault, 0, RECEIPTLINECOUNT - 20)
                             SimpleTextDisplay(sender, e, Dt(i)(2), FontDefault, 50, RECEIPTLINECOUNT - 20)
                             RightDisplay1(sender, e, RECEIPTLINECOUNT, "", Dt(i)(5), FontDefault, 0, 122 + BodySpacing)
                             RightDisplay1(sender, e, RECEIPTLINECOUNT, "", price, FontDefault, 0, 182 + BodySpacing)
-                            FillEJournalContent("        " & Dt(i)(4) & "           " & Dt(i)(2) & "           " & Dt(i)(5) & "       " & price)
+                            FillEJournalContent("        " & Dt(i)(4) & "           " & Dt(i)(2) & "           " & Dt(i)(5) & "       " & price, {Dt(i)(4), Dt(i)(2), Dt(i)(5), price}, "S4", False, False)
                             If Dt(i)(17) > 0 Then
                                 RECEIPTLINECOUNT += 10
                                 RightToLeftDisplay(sender, e, RECEIPTLINECOUNT, "     + UPGRADE BRWN " & Dt(i)(17), "", FontAddOn, 0, 40)
-                                FillEJournalContent("     + UPGRADE BRWN " & Dt(i)(17))
+                                FillEJournalContent("     + UPGRADE BRWN " & Dt(i)(17), {}, "S", False, True)
                             End If
                             If Dt(i)(20) > 0 Then
                                 RECEIPTLINECOUNT += 10
                                 RightToLeftDisplay(sender, e, RECEIPTLINECOUNT, "    + " & Dt(i)(20) & " SENIOR DISCOUNT", "", FontAddOn, 0, 40)
-                                FillEJournalContent("    + " & Dt(i)(20) & " SENIOR DISCOUNT")
+                                FillEJournalContent("    + " & Dt(i)(20) & " SENIOR DISCOUNT", {}, "S", False, True)
                             End If
                             If Dt(i)(22) > 0 Then
                                 RECEIPTLINECOUNT += 10
                                 RightToLeftDisplay(sender, e, RECEIPTLINECOUNT, "    + " & Dt(i)(22) & " PWD DISCOUNT", "", FontAddOn, 0, 40)
-                                FillEJournalContent("    + " & Dt(i)(22) & " PWD DISCOUNT")
+                                FillEJournalContent("    + " & Dt(i)(22) & " PWD DISCOUNT", {}, "S", False, True)
                             End If
                             If Dt(i)(24) > 0 Then
                                 RECEIPTLINECOUNT += 10
                                 RightToLeftDisplay(sender, e, RECEIPTLINECOUNT, "    + " & Dt(i)(24) & "ATHLETE DISCOUNT", "", FontAddOn, 0, 40)
-                                FillEJournalContent("    + " & Dt(i)(24) & "ATHLETE DISCOUNT")
+                                FillEJournalContent("    + " & Dt(i)(24) & "ATHLETE DISCOUNT", {}, "S", False, True)
                             End If
                             If Dt(i)(26) > 0 Then
                                 RECEIPTLINECOUNT += 10
                                 RightToLeftDisplay(sender, e, RECEIPTLINECOUNT, "    + " & Dt(i)(26) & " S.P DISCOUNT", "", FontAddOn, 0, 40)
-                                FillEJournalContent("    + " & Dt(i)(26) & " S.P DISCOUNT")
+                                FillEJournalContent("    + " & Dt(i)(26) & " S.P DISCOUNT", {}, "S", False, True)
                             End If
                         End If
                         RECEIPTLINECOUNT += 10
@@ -1304,75 +1298,59 @@ Module publicfunctions
                                 Dim NETSALES = reader("grosssales")
                                 RECEIPTLINECOUNT += 20
                                 RightToLeftDisplay(sender, e, RECEIPTLINECOUNT, "Total Sales: ", NETSALES, FontDefault, 11, 0)
-                                FillEJournalContent("Total Sales:      " & NETSALES)
+                                FillEJournalContent("Total Sales:      " & NETSALES, {"Total Sales: ", NETSALES}, "LR", False, False)
                                 RECEIPTLINECOUNT += 10
                                 RightToLeftDisplay(sender, e, RECEIPTLINECOUNT, "Amount Net of VAT: ", reader("vatablesales"), FontDefault, 11, 0)
-                                FillEJournalContent("Amount Net of VAT:      " & reader("vatablesales"))
+                                FillEJournalContent("Amount Net of VAT:      " & reader("vatablesales"), {"Amount Net of VAT: ", reader("vatablesales")}, "LR", False, False)
                                 RECEIPTLINECOUNT += 10
 
                                 RightToLeftDisplay(sender, e, RECEIPTLINECOUNT, "Less Discount: ", reader("totaldiscount"), FontDefault, 11, 0)
-                                FillEJournalContent("Less Discount: " & reader("totaldiscount"))
+                                FillEJournalContent("Less Discount: " & reader("totaldiscount"), {"Less Discount: ", reader("totaldiscount")}, "LR", False, False)
                                 RECEIPTLINECOUNT += 10
 
                                 RightToLeftDisplay(sender, e, RECEIPTLINECOUNT, "Less VAT: ", reader("lessvat"), FontDefault, 11, 0)
-                                FillEJournalContent("Less VAT: :      " & reader("lessvat"))
-
-                                'If reader("zeroratedsales") > 0 Then
-                                '    RightToLeftDisplay(sender, e, RECEIPTLINECOUNT, "Less VAT: ", "0.00", FontDefault, 11, 0)
-                                '    FillEJournalContent("Less VAT: :      0.00")
-                                'Else
-                                '    RightToLeftDisplay(sender, e, RECEIPTLINECOUNT, "Less VAT: ", reader("lessvat"), FontDefault, 11, 0)
-                                '    FillEJournalContent("Less VAT: :      " & reader("lessvat"))
-                                'End If
+                                FillEJournalContent("Less VAT: :      " & reader("lessvat"), {"Less VAT: ", reader("lessvat")}, "LR", False, False)
 
                                 RECEIPTLINECOUNT += 10
                                 RightToLeftDisplay(sender, e, RECEIPTLINECOUNT, "Amount Due: ", reader("amountdue"), FontDefaultBold, 11, 0)
-                                FillEJournalContent("Amount Due:      " & reader("amountdue"))
+                                FillEJournalContent("Amount Due:      " & reader("amountdue"), {"Amount Due: ", reader("amountdue")}, "LR", False, False)
                                 RECEIPTLINECOUNT += 10
-                                RightToLeftDisplay(sender, e, RECEIPTLINECOUNT, "Add VAT: ", "0.00", FontDefaultBold, 11, 0)
-                                FillEJournalContent("Amount Due:      0.00")
+                                RightToLeftDisplay(sender, e, RECEIPTLINECOUNT, "Add VAT: ", reader("vatpercentage"), FontDefaultBold, 11, 0)
+                                FillEJournalContent("Amount Due:      0.00", {"Add VAT: ", reader("vatpercentage")}, "LR", False, False)
                                 RECEIPTLINECOUNT += 10
                                 RightToLeftDisplay(sender, e, RECEIPTLINECOUNT, "Total Amount Due: ", reader("amountdue"), FontDefaultBold, 11, 0)
-                                FillEJournalContent("Total Amount Due:      " & reader("amountdue"))
+                                FillEJournalContent("Total Amount Due:      " & reader("amountdue"), {"Total Amount Due: ", reader("amountdue")}, "LR", False, False)
                                 RECEIPTLINECOUNT += 10
                                 RightToLeftDisplay(sender, e, RECEIPTLINECOUNT, "Credit Sale: ", reader("amounttendered"), FontDefault, 11, 0)
-                                FillEJournalContent("Credit Sale:      " & reader("amounttendered"))
+                                FillEJournalContent("Credit Sale:      " & reader("amounttendered"), {"Credit Sale: ", reader("amounttendered")}, "LR", False, False)
                                 RECEIPTLINECOUNT += 10
                                 RightToLeftDisplay(sender, e, RECEIPTLINECOUNT, "Change: ", reader("change"), FontDefault, 11, 0)
-                                FillEJournalContent("Change:      " & reader("change"))
+                                FillEJournalContent("Change:      " & reader("change"), {"Change: ", reader("change")}, "LR", False, False)
                                 PrintCenterStars(sender, e, FontDefault, RECEIPTLINECOUNT + 15)
-                                FillEJournalContent("*************************************")
+                                FillEJournalContent("*************************************", {}, "C", True, True)
                                 PrintSmallLine(sender, e, FontDefaultLine, RECEIPTLINECOUNT)
-                                FillEJournalContent("------------------------------------------------------------")
+                                FillEJournalContent("------------------------------------------------------------", {}, "C", True, True)
                                 RECEIPTLINECOUNT += 30
                                 RightToLeftDisplay(sender, e, RECEIPTLINECOUNT, "Vatable Sales: ", reader("vatablesales"), FontDefault, 11, 0)
-                                FillEJournalContent("Vatable Sales:      " & reader("vatablesales"))
+                                FillEJournalContent("Vatable Sales:      " & reader("vatablesales"), {"Vatable Sales: ", reader("vatablesales")}, "LR", False, False)
                                 RECEIPTLINECOUNT += 10
                                 RightToLeftDisplay(sender, e, RECEIPTLINECOUNT, "Vat Amount: ", reader("vatpercentage"), FontDefault, 11, 0)
-                                FillEJournalContent("Vat Amount:      " & reader("vatpercentage"))
+                                FillEJournalContent("Vat Amount:      " & reader("vatpercentage"), {"Vat Amount: ", reader("vatpercentage")}, "LR", False, False)
                                 RECEIPTLINECOUNT += 10
                                 RightToLeftDisplay(sender, e, RECEIPTLINECOUNT, "Vat Exempt Sales: ", reader("vatexemptsales"), FontDefault, 11, 0)
-                                FillEJournalContent("Vat Exempt Sales:      " & reader("vatexemptsales"))
+                                FillEJournalContent("Vat Exempt Sales:      " & reader("vatexemptsales"), {"Vat Exempt Sales: ", reader("vatexemptsales")}, "LR", False, False)
                                 RECEIPTLINECOUNT += 10
 
                                 RightToLeftDisplay(sender, e, RECEIPTLINECOUNT, "Less Vat: ", reader("lessvat"), FontDefault, 11, 0)
-                                FillEJournalContent("Less Vat: :      " & reader("lessvat"))
-
-                                'If reader("zeroratedsales") > 0 Then
-                                '    RightToLeftDisplay(sender, e, RECEIPTLINECOUNT, "Less Vat: ", "0.00", FontDefault, 11, 0)
-                                '    FillEJournalContent("Less Vat: :      0.00")
-                                'Else
-                                '    RightToLeftDisplay(sender, e, RECEIPTLINECOUNT, "Less Vat: ", reader("lessvat"), FontDefault, 11, 0)
-                                '    FillEJournalContent("Less Vat: :      " & reader("lessvat"))
-                                'End If
+                                FillEJournalContent("Less Vat: :      " & reader("lessvat"), {"Less Vat: ", reader("lessvat")}, "LR", False, False)
 
                                 RECEIPTLINECOUNT += 10
                                 RightToLeftDisplay(sender, e, RECEIPTLINECOUNT, "Zero Rated Sales: ", reader("zeroratedsales"), FontDefault, 11, 0)
-                                FillEJournalContent("Zero Rated Sales:     " & reader("zeroratedsales"))
+                                FillEJournalContent("Zero Rated Sales:     " & reader("zeroratedsales"), {"Zero Rated Sales: ", reader("zeroratedsales")}, "LR", False, False)
                                 PrintCenterStars(sender, e, FontDefault, RECEIPTLINECOUNT + 15)
-                                FillEJournalContent("*************************************")
+                                FillEJournalContent("*************************************", {}, "C", True, True)
                                 PrintSmallLine(sender, e, FontDefaultLine, RECEIPTLINECOUNT)
-                                FillEJournalContent("------------------------------------------------------------")
+                                FillEJournalContent("------------------------------------------------------------", {}, "C", True, True)
                             End While
                         End If
                     End Using
@@ -1380,43 +1358,42 @@ Module publicfunctions
                     Dim Qty = sum("quantity", "loc_daily_transaction_details WHERE transaction_number = '" & TransactionNumber & "'")
                     RECEIPTLINECOUNT += 10
                     SimpleTextDisplay(sender, e, "Total Item/s: " & Qty, FontDefault, 0, RECEIPTLINECOUNT)
-                    FillEJournalContent("Total Item/s:      " & Qty)
+                    FillEJournalContent("Total Item/s:      " & Qty, {}, "S", False, True)
                     RECEIPTLINECOUNT += 10
                     SimpleTextDisplay(sender, e, "Store ID: " & GetStoreID, FontDefault, 0, RECEIPTLINECOUNT)
-                    FillEJournalContent("Store ID:      " & GetStoreID)
+                    FillEJournalContent("Store ID:      " & GetStoreID, {}, "S", False, True)
                     SimpleTextDisplay(sender, e, "Terminal No.: " & S_Terminal_No, FontDefault, 100, RECEIPTLINECOUNT)
-                    FillEJournalContent("Terminal No.:      " & S_Terminal_No)
+                    FillEJournalContent("Terminal No.:      " & S_Terminal_No, {}, "S", False, True)
                     RECEIPTLINECOUNT += 10
                     SimpleTextDisplay(sender, e, "Transaction Type: " & GetTransactionType, FontDefault, 0, RECEIPTLINECOUNT)
-                    FillEJournalContent("Transaction Type:      " & GetTransactionType)
+                    FillEJournalContent("Transaction Type:      " & GetTransactionType, {}, "S", False, True)
                     RECEIPTLINECOUNT += 10
 
                     RECEIPTLINECOUNT += 15
 
                     CenterTextDisplay(sender, e, OfficialInvoiceRefundBody, FontDefaultItalic, RECEIPTLINECOUNT + 20)
-                    FillEJournalContent(OfficialInvoiceRefundBody)
+                    FillEJournalContent(OfficialInvoiceRefundBody, {}, "C", True, True)
 
                     RECEIPTLINECOUNT += 20
                     PrintCenterStars(sender, e, FontDefault, RECEIPTLINECOUNT + 15)
-                    FillEJournalContent("*************************************")
+                    FillEJournalContent("*************************************", {}, "C", True, True)
                     PrintSmallLine(sender, e, FontDefaultLine, RECEIPTLINECOUNT)
-                    FillEJournalContent("------------------------------------------------------------")
+                    FillEJournalContent("------------------------------------------------------------", {}, "C", True, True)
                 Else
                     With POS
                         For i As Integer = 0 To .DataGridViewOrders.Rows.Count - 1 Step +1
                             Dim price = .DataGridViewOrders.Rows(i).Cells(3).Value
                             If .DataGridViewOrders.Rows(i).Cells(7).Value.ToString = "Add-Ons" Then
                                 If .DataGridViewOrders.Rows(i).Cells(13).Value.ToString = "Classic" Then
-                                    'RightToLeftDisplay(sender, e, RECEIPTLINECOUNT, "     @" & .DataGridViewOrders.Rows(i).Cells(0).Value, price, FontAddOn, 0, 40)
                                     RightDisplay1(sender, e, RECEIPTLINECOUNT, "", .DataGridViewOrders.Rows(i).Cells(0).Value & "@", FontDefault, 0, 82 + BodySpacing)
                                     RightDisplay1(sender, e, RECEIPTLINECOUNT, "", price, FontDefault, 0, 182 + BodySpacing)
-                                    FillEJournalContent("     @" & .DataGridViewOrders.Rows(i).Cells(0).Value & "     " & price)
+                                    FillEJournalContent("     @" & .DataGridViewOrders.Rows(i).Cells(0).Value & "     " & price, {}, "S", False, True)
                                 Else
                                     SimpleTextDisplay(sender, e, .DataGridViewOrders.Rows(i).Cells(1).Value, FontDefault, 0, RECEIPTLINECOUNT - 20)
                                     SimpleTextDisplay(sender, e, .DataGridViewOrders.Rows(i).Cells(6).Value, FontDefault, 50, RECEIPTLINECOUNT - 20)
                                     RightDisplay1(sender, e, RECEIPTLINECOUNT, "", .DataGridViewOrders.Rows(i).Cells(2).Value, FontDefault, 0, 122 + BodySpacing)
                                     RightDisplay1(sender, e, RECEIPTLINECOUNT, "", price, FontDefault, 0, 182 + BodySpacing)
-                                    FillEJournalContent("        " & .DataGridViewOrders.Rows(i).Cells(1).Value & "           " & .DataGridViewOrders.Rows(i).Cells(6).Value & "           " & .DataGridViewOrders.Rows(i).Cells(2).Value & "       " & price)
+                                    FillEJournalContent("        " & .DataGridViewOrders.Rows(i).Cells(1).Value & "           " & .DataGridViewOrders.Rows(i).Cells(6).Value & "           " & .DataGridViewOrders.Rows(i).Cells(2).Value & "       " & price, { .DataGridViewOrders.Rows(i).Cells(1).Value, .DataGridViewOrders.Rows(i).Cells(6).Value, .DataGridViewOrders.Rows(i).Cells(2).Value, price}, "S4", False, False)
                                 End If
                             Else
                                 SimpleTextDisplay(sender, e, .DataGridViewOrders.Rows(i).Cells(1).Value, FontDefault, 0, RECEIPTLINECOUNT - 20)
@@ -1424,31 +1401,31 @@ Module publicfunctions
                                 RightDisplay1(sender, e, RECEIPTLINECOUNT, "", .DataGridViewOrders.Rows(i).Cells(2).Value, FontDefault, 0, 122 + BodySpacing)
                                 RightDisplay1(sender, e, RECEIPTLINECOUNT, "", price, FontDefault, 0, 182 + BodySpacing)
 
-                                FillEJournalContent("        " & .DataGridViewOrders.Rows(i).Cells(1).Value & "           " & .DataGridViewOrders.Rows(i).Cells(6).Value & "           " & .DataGridViewOrders.Rows(i).Cells(2).Value & "       " & price)
+                                FillEJournalContent("        " & .DataGridViewOrders.Rows(i).Cells(1).Value & "           " & .DataGridViewOrders.Rows(i).Cells(6).Value & "           " & .DataGridViewOrders.Rows(i).Cells(2).Value & "       " & price, { .DataGridViewOrders.Rows(i).Cells(1).Value, .DataGridViewOrders.Rows(i).Cells(6).Value, .DataGridViewOrders.Rows(i).Cells(2).Value, price}, "S4", False, False)
                                 If .DataGridViewOrders.Rows(i).Cells(11).Value > 0 Then
                                     RECEIPTLINECOUNT += 10
                                     RightToLeftDisplay(sender, e, RECEIPTLINECOUNT, "     + UPGRADE BRWN " & .DataGridViewOrders.Rows(i).Cells(11).Value, "", FontAddOn, 0, 40)
-                                    FillEJournalContent("     + UPGRADE BRWN " & .DataGridViewOrders.Rows(i).Cells(11).Value)
+                                    FillEJournalContent("     + UPGRADE BRWN " & .DataGridViewOrders.Rows(i).Cells(11).Value, {}, "S", False, True)
                                 End If
                                 If .DataGridViewOrders.Rows(i).Cells(15).Value > 0 Then
                                     RECEIPTLINECOUNT += 10
                                     RightToLeftDisplay(sender, e, RECEIPTLINECOUNT, "    + " & .DataGridViewOrders.Rows(i).Cells(16).Value & " SENIOR DISCOUNT", "", FontAddOn, 0, 40)
-                                    FillEJournalContent("    + " & .DataGridViewOrders.Rows(i).Cells(16).Value & " SENIOR DISCOUNT")
+                                    FillEJournalContent("    + " & .DataGridViewOrders.Rows(i).Cells(16).Value & " SENIOR DISCOUNT", {}, "S", False, True)
                                 End If
                                 If .DataGridViewOrders.Rows(i).Cells(17).Value > 0 Then
                                     RECEIPTLINECOUNT += 10
                                     RightToLeftDisplay(sender, e, RECEIPTLINECOUNT, "    + " & .DataGridViewOrders.Rows(i).Cells(18).Value & " PWD DISCOUNT", "", FontAddOn, 0, 40)
-                                    FillEJournalContent("    + " & .DataGridViewOrders.Rows(i).Cells(18).Value & " PWD DISCOUNT")
+                                    FillEJournalContent("    + " & .DataGridViewOrders.Rows(i).Cells(18).Value & " PWD DISCOUNT", {}, "S", False, True)
                                 End If
                                 If .DataGridViewOrders.Rows(i).Cells(19).Value > 0 Then
                                     RECEIPTLINECOUNT += 10
                                     RightToLeftDisplay(sender, e, RECEIPTLINECOUNT, "    + " & .DataGridViewOrders.Rows(i).Cells(20).Value & "ATHLETE DISCOUNT", "", FontAddOn, 0, 40)
-                                    FillEJournalContent("    + " & .DataGridViewOrders.Rows(i).Cells(20).Value & "ATHLETE DISCOUNT")
+                                    FillEJournalContent("    + " & .DataGridViewOrders.Rows(i).Cells(20).Value & "ATHLETE DISCOUNT", {}, "S", False, True)
                                 End If
                                 If .DataGridViewOrders.Rows(i).Cells(21).Value > 0 Then
                                     RECEIPTLINECOUNT += 10
                                     RightToLeftDisplay(sender, e, RECEIPTLINECOUNT, "    + " & .DataGridViewOrders.Rows(i).Cells(22).Value & " S.P DISCOUNT", "", FontAddOn, 0, 40)
-                                    FillEJournalContent("    + " & .DataGridViewOrders.Rows(i).Cells(22).Value & " S.P DISCOUNT")
+                                    FillEJournalContent("    + " & .DataGridViewOrders.Rows(i).Cells(22).Value & " S.P DISCOUNT", {}, "S", False, True)
                                 End If
                             End If
                             RECEIPTLINECOUNT += 10
@@ -1462,107 +1439,99 @@ Module publicfunctions
                         Dim Qty = SumOfColumnsToInt(.DataGridViewOrders, 1)
                         RECEIPTLINECOUNT += 20
                         RightToLeftDisplay(sender, e, RECEIPTLINECOUNT, "Total Sales: ", .TextBoxSUBTOTAL.Text, FontDefault, 11, 0)
-                        FillEJournalContent("Total Sales:      " & .TextBoxSUBTOTAL.Text)
+                        FillEJournalContent("Total Sales:      " & .TextBoxSUBTOTAL.Text, {"Total Sales: ", .TextBoxSUBTOTAL.Text}, "LR", False, False)
                         RECEIPTLINECOUNT += 10
                         RightToLeftDisplay(sender, e, RECEIPTLINECOUNT, "Amount Net of VAT: ", NUMBERFORMAT(VATABLESALES), FontDefault, 11, 0)
-                        FillEJournalContent("Amount Net of VAT:      " & NUMBERFORMAT(VATABLESALES))
+                        FillEJournalContent("Amount Net of VAT:      " & NUMBERFORMAT(VATABLESALES), {"Amount Net of VAT: ", NUMBERFORMAT(VATABLESALES)}, "LR", False, False)
                         RECEIPTLINECOUNT += 10
 
                         If SeniorGCDiscount Then
                             RightToLeftDisplay(sender, e, RECEIPTLINECOUNT, "Less Discount: " & PromoName, .TextBoxDISCOUNT.Text, FontDefault, 11, 0)
-                            FillEJournalContent("Less Discount:      " & PromoName & "     " & .TextBoxDISCOUNT.Text)
+                            FillEJournalContent("Less Discount:      " & PromoName & "     " & .TextBoxDISCOUNT.Text, {"Less Discount: " & PromoName, .TextBoxDISCOUNT.Text}, "LR", False, False)
                         End If
                         If DiscAppleid Then
                             RightToLeftDisplay(sender, e, RECEIPTLINECOUNT, "Less Discount: ", .TextBoxDISCOUNT.Text, FontDefault, 11, 0)
-                            FillEJournalContent("Less Discount:      " & .TextBoxDISCOUNT.Text)
+                            FillEJournalContent("Less Discount:      " & .TextBoxDISCOUNT.Text, {"Less Discount: ", .TextBoxDISCOUNT.Text}, "LR", False, False)
                         Else
                             If PromoApplied Then
                                 RightToLeftDisplay(sender, e, RECEIPTLINECOUNT, "Less Discount: " & PromoName, .TextBoxDISCOUNT.Text, FontDefault, 11, 0)
-                                FillEJournalContent("Less Discount:      " & PromoName & "     " & .TextBoxDISCOUNT.Text)
+                                FillEJournalContent("Less Discount:      " & PromoName & "     " & .TextBoxDISCOUNT.Text, {"Less Discount: " & PromoName, .TextBoxDISCOUNT.Text}, "LR", False, False)
                             Else
                                 RightToLeftDisplay(sender, e, RECEIPTLINECOUNT, "Less Discount: ", .TextBoxDISCOUNT.Text, FontDefault, 11, 0)
-                                FillEJournalContent("Less Discount:      " & .TextBoxDISCOUNT.Text)
+                                FillEJournalContent("Less Discount:      " & .TextBoxDISCOUNT.Text, {"Less Discount: ", .TextBoxDISCOUNT.Text}, "LR", False, False)
                             End If
                         End If
                         RECEIPTLINECOUNT += 10
                         If S_ZeroRated = "0" Then
                             RightToLeftDisplay(sender, e, RECEIPTLINECOUNT, "Less VAT: ", NUMBERFORMAT(LESSVAT), FontDefault, 11, 0)
-                            FillEJournalContent("Less VAT:      " & NUMBERFORMAT(LESSVAT))
+                            FillEJournalContent("Less VAT:      " & NUMBERFORMAT(LESSVAT), {"Less VAT: ", NUMBERFORMAT(LESSVAT)}, "LR", False, False)
                         Else
                             RightToLeftDisplay(sender, e, RECEIPTLINECOUNT, "Less VAT: ", "0.00", FontDefault, 11, 0)
-                            FillEJournalContent("Less VAT:      0.00")
+                            FillEJournalContent("Less VAT:      0.00", {"Less VAT: ", "0.00"}, "LR", False, False)
                         End If
 
                         RECEIPTLINECOUNT += 10
                         RightToLeftDisplay(sender, e, RECEIPTLINECOUNT, "Amount Due: ", NUMBERFORMAT(NETSALES), FontDefault, 11, 0)
-                        FillEJournalContent("Amount Due:      " & NUMBERFORMAT(NETSALES))
+                        FillEJournalContent("Amount Due:      " & NUMBERFORMAT(NETSALES), {"Amount Due: ", NUMBERFORMAT(NETSALES)}, "LR", False, False)
                         RECEIPTLINECOUNT += 10
-                        RightToLeftDisplay(sender, e, RECEIPTLINECOUNT, "Add VAT: ", "0.00", FontDefault, 11, 0)
-                        FillEJournalContent("Add VAT:      0.00")
+                        RightToLeftDisplay(sender, e, RECEIPTLINECOUNT, "Add VAT: ", NUMBERFORMAT(VATABLESALES), FontDefault, 11, 0)
+                        FillEJournalContent("Add VAT:      0.00", {"Add VAT: ", NUMBERFORMAT(VATABLESALES)}, "LR", False, False)
                         RECEIPTLINECOUNT += 10
                         RightToLeftDisplay(sender, e, RECEIPTLINECOUNT, "Total Amount Due: ", NUMBERFORMAT(NETSALES), FontDefaultBold, 11, 0)
-                        FillEJournalContent("Total Amount Due:      " & NUMBERFORMAT(NETSALES))
+                        FillEJournalContent("Total Amount Due:      " & NUMBERFORMAT(NETSALES), {"Total Amount Due: ", NUMBERFORMAT(NETSALES)}, "LR", False, False)
                         RECEIPTLINECOUNT += 10
 
                         RightToLeftDisplay(sender, e, RECEIPTLINECOUNT, "Credit Sale: ", NUMBERFORMAT(Double.Parse(TEXTBOXMONEYVALUE)), FontDefault, 11, 0)
-                        FillEJournalContent("Credit Sale:      " & NUMBERFORMAT(NETSALES))
+                        FillEJournalContent("Credit Sale:      " & NUMBERFORMAT(Double.Parse(TEXTBOXMONEYVALUE)), {"Credit Sale: ", NUMBERFORMAT(Double.Parse(TEXTBOXMONEYVALUE))}, "LR", False, False)
                         RECEIPTLINECOUNT += 10
                         RightToLeftDisplay(sender, e, RECEIPTLINECOUNT, "Change: ", NUMBERFORMAT(Double.Parse(TEXTBOXCHANGEVALUE)), FontDefault, 11, 0)
-                        FillEJournalContent("Change:      " & NUMBERFORMAT(Double.Parse(TEXTBOXCHANGEVALUE)))
+                        FillEJournalContent("Change:      " & NUMBERFORMAT(Double.Parse(TEXTBOXCHANGEVALUE)), {"Change:", NUMBERFORMAT(Double.Parse(TEXTBOXCHANGEVALUE))}, "LR", False, False)
                         PrintCenterStars(sender, e, FontDefault, RECEIPTLINECOUNT + 15)
-                        FillEJournalContent("*************************************")
+                        FillEJournalContent("*************************************", {}, "C", True, True)
                         PrintSmallLine(sender, e, FontDefaultLine, RECEIPTLINECOUNT)
-                        FillEJournalContent("------------------------------------------------------------")
+                        FillEJournalContent("------------------------------------------------------------", {}, "C", True, True)
                         RECEIPTLINECOUNT += 30
                         RightToLeftDisplay(sender, e, RECEIPTLINECOUNT, "Vatable Sales: ", NUMBERFORMAT(VATABLESALES), FontDefault, 11, 0)
-                        FillEJournalContent("Vatable Sales:      " & NUMBERFORMAT(VATABLESALES))
+                        FillEJournalContent("Vatable Sales:      " & NUMBERFORMAT(VATABLESALES), {"Vatable Sales:", NUMBERFORMAT(VATABLESALES)}, "LR", False, False)
                         RECEIPTLINECOUNT += 10
                         RightToLeftDisplay(sender, e, RECEIPTLINECOUNT, "Vat Amount: ", NUMBERFORMAT(VAT12PERCENT), FontDefault, 11, 0)
-                        FillEJournalContent("Vat Amount:      " & NUMBERFORMAT(VAT12PERCENT))
+                        FillEJournalContent("Vat Amount:      " & NUMBERFORMAT(VAT12PERCENT), {"Vat Amount:", NUMBERFORMAT(VAT12PERCENT)}, "LR", False, False)
                         RECEIPTLINECOUNT += 10
                         RightToLeftDisplay(sender, e, RECEIPTLINECOUNT, "Vat Exempt Sales: ", NUMBERFORMAT(VATEXEMPTSALES), FontDefault, 11, 0)
-                        FillEJournalContent("Vat Exempt Sales:      " & NUMBERFORMAT(VATEXEMPTSALES))
+                        FillEJournalContent("Vat Exempt Sales:      " & NUMBERFORMAT(VATEXEMPTSALES), {"Vat Exempt Sales:", NUMBERFORMAT(VATEXEMPTSALES)}, "LR", False, False)
                         RECEIPTLINECOUNT += 10
 
                         RightToLeftDisplay(sender, e, RECEIPTLINECOUNT, "Less Vat: ", NUMBERFORMAT(LESSVAT), FontDefault, 11, 0)
-                        FillEJournalContent("Less Vat:      " & NUMBERFORMAT(LESSVAT))
-
-                        'If S_ZeroRated = "0" Then
-                        '    RightToLeftDisplay(sender, e, RECEIPTLINECOUNT, "Less Vat: ", NUMBERFORMAT(LESSVAT), FontDefault, 11, 0)
-                        '    FillEJournalContent("Less Vat:      " & NUMBERFORMAT(LESSVAT))
-                        'Else
-                        '    RightToLeftDisplay(sender, e, RECEIPTLINECOUNT, "Less Vat: ", NUMBERFORMAT(LESSVAT), FontDefault, 11, 0)
-                        '    FillEJournalContent("Less Vat:      " & NUMBERFORMAT(LESSVAT))
-                        'End If
+                        FillEJournalContent("Less Vat:      " & NUMBERFORMAT(LESSVAT), {"Less Vat:      ", NUMBERFORMAT(LESSVAT)}, "LR", False, False)
 
                         RECEIPTLINECOUNT += 10
                         RightToLeftDisplay(sender, e, RECEIPTLINECOUNT, "Zero Rated Sales: ", NUMBERFORMAT(ZERORATEDSALES), FontDefault, 11, 0)
-                        FillEJournalContent("Zero Rated Sales:      " & NUMBERFORMAT(ZERORATEDSALES))
+                        FillEJournalContent("Zero Rated Sales:      " & NUMBERFORMAT(ZERORATEDSALES), {"Zero Rated Sales:", NUMBERFORMAT(ZERORATEDSALES)}, "LR", False, False)
                         PrintCenterStars(sender, e, FontDefault, RECEIPTLINECOUNT + 15)
-                        FillEJournalContent("*************************************")
+                        FillEJournalContent("*************************************", {}, "C", True, True)
                         PrintSmallLine(sender, e, FontDefaultLine, RECEIPTLINECOUNT)
-                        FillEJournalContent("------------------------------------------------------------")
+                        FillEJournalContent("------------------------------------------------------------", {}, "C", True, True)
                         RECEIPTLINECOUNT += 10
                         SimpleTextDisplay(sender, e, "Total Item/s: " & Qty, FontDefault, 0, RECEIPTLINECOUNT)
-                        FillEJournalContent("Total Item/s: " & Qty)
+                        FillEJournalContent("Total Item/s: " & Qty, {}, "S", False, True)
                         RECEIPTLINECOUNT += 10
                         SimpleTextDisplay(sender, e, "Store ID: " & ClientStoreID, FontDefault, 0, RECEIPTLINECOUNT)
-                        FillEJournalContent("Store ID: " & ClientStoreID)
+                        FillEJournalContent("Store ID: " & ClientStoreID, {}, "S", False, True)
                         SimpleTextDisplay(sender, e, "Terminal No.: " & S_Terminal_No, FontDefault, 100, RECEIPTLINECOUNT)
-                        FillEJournalContent("Terminal No.: " & S_Terminal_No)
+                        FillEJournalContent("Terminal No.: " & S_Terminal_No, {}, "S", False, True)
                         RECEIPTLINECOUNT += 10
                         SimpleTextDisplay(sender, e, "Transaction Type: " & Trim(TRANSACTIONMODE), FontDefault, 0, RECEIPTLINECOUNT)
-                        FillEJournalContent("Transaction Type.: " & Trim(TRANSACTIONMODE))
+                        FillEJournalContent("Transaction Type.: " & Trim(TRANSACTIONMODE), {}, "S", False, True)
                         RECEIPTLINECOUNT += 10
 
                         RECEIPTLINECOUNT += 15
                         CenterTextDisplay(sender, e, OfficialInvoiceRefundBody, FontDefaultItalic, RECEIPTLINECOUNT + 20)
-                        FillEJournalContent(OfficialInvoiceRefundBody)
+                        FillEJournalContent(OfficialInvoiceRefundBody, {}, "C", True, True)
                         RECEIPTLINECOUNT += 20
                         PrintCenterStars(sender, e, FontDefault, RECEIPTLINECOUNT + 15)
-                        FillEJournalContent("*************************************")
+                        FillEJournalContent("*************************************", {}, "C", True, True)
                         PrintSmallLine(sender, e, FontDefaultLine, RECEIPTLINECOUNT)
-                        FillEJournalContent("------------------------------------------------------------")
+                        FillEJournalContent("------------------------------------------------------------", {}, "C", True, True)
                     End With
                 End If
             End If
@@ -1590,7 +1559,7 @@ Module publicfunctions
             End If
             RECEIPTLINECOUNT += 30
             CenterTextDisplay(sender, e, "CUSTOMER INFORMATION", FontDefault, RECEIPTLINECOUNT)
-            FillEJournalContent("CUSTOMER INFORMATION")
+            FillEJournalContent("CUSTOMER INFORMATION", {}, "C", False, True)
             RECEIPTLINECOUNT += 20
             e.Graphics.DrawLine(Pens.Black, 40 + LineToTextSpacing, RECEIPTLINECOUNT, 190 + BodySpacing, RECEIPTLINECOUNT)
             RECEIPTLINECOUNT += 10
@@ -1629,35 +1598,35 @@ Module publicfunctions
                 End Using
 
                 SimpleTextDisplay(sender, e, "Name: " & CustName, FontDefault, 0, RECEIPTLINECOUNT - 78)
-                FillEJournalContent("Name: " & CustName)
+                FillEJournalContent("Name: " & CustName, {}, "S", False, True)
                 RECEIPTLINECOUNT += 10
                 SimpleTextDisplay(sender, e, "Tin: " & CustTin, FontDefault, 0, RECEIPTLINECOUNT - 78)
-                FillEJournalContent("Tin: " & CustTin)
+                FillEJournalContent("Tin: " & CustTin, {}, "S", False, True)
                 RECEIPTLINECOUNT += 10
                 SimpleTextDisplay(sender, e, "Address: " & CustAddress, FontDefault, 0, RECEIPTLINECOUNT - 78)
-                FillEJournalContent("Address: " & CustAddress)
+                FillEJournalContent("Address: " & CustAddress, {}, "S", False, True)
                 RECEIPTLINECOUNT += 10
                 SimpleTextDisplay(sender, e, "Business Style: " & CustBusiness, FontDefault, 0, RECEIPTLINECOUNT - 78)
-                FillEJournalContent("Business Style: " & CustBusiness)
+                FillEJournalContent("Business Style: " & CustBusiness, {}, "S", False, True)
                 RECEIPTLINECOUNT += 10
                 SimpleTextDisplay(sender, e, "Signature:", FontDefault, 0, RECEIPTLINECOUNT - 78)
-                FillEJournalContent("Signature:")
+                FillEJournalContent("Signature:", {}, "S", False, True)
                 RECEIPTLINECOUNT -= 20
             Else
                 SimpleTextDisplay(sender, e, "Name: " & CUST_INFO_NAME, FontDefault, 0, RECEIPTLINECOUNT - 78)
-                FillEJournalContent("Name: " & CUST_INFO_NAME)
+                FillEJournalContent("Name: " & CUST_INFO_NAME, {}, "S", False, True)
                 RECEIPTLINECOUNT += 10
                 SimpleTextDisplay(sender, e, "Tin: " & CUST_INFO_TIN, FontDefault, 0, RECEIPTLINECOUNT - 78)
-                FillEJournalContent("Tin: " & CUST_INFO_TIN)
+                FillEJournalContent("Tin: " & CUST_INFO_TIN, {}, "S", False, True)
                 RECEIPTLINECOUNT += 10
                 SimpleTextDisplay(sender, e, "Address: " & CUST_INFO_ADDRESS, FontDefault, 0, RECEIPTLINECOUNT - 78)
-                FillEJournalContent("Address: " & CUST_INFO_ADDRESS)
+                FillEJournalContent("Address: " & CUST_INFO_ADDRESS, {}, "S", False, True)
                 RECEIPTLINECOUNT += 10
                 SimpleTextDisplay(sender, e, "Business Style: " & CUST_INFO_BUSINESS, FontDefault, 0, RECEIPTLINECOUNT - 78)
-                FillEJournalContent("Business Style: " & CUST_INFO_BUSINESS)
+                FillEJournalContent("Business Style: " & CUST_INFO_BUSINESS, {}, "S", False, True)
                 RECEIPTLINECOUNT += 10
                 SimpleTextDisplay(sender, e, "Signature:", FontDefault, 0, RECEIPTLINECOUNT - 78)
-                FillEJournalContent("Signature: ")
+                FillEJournalContent("Signature: ", {}, "S", False, True)
                 RECEIPTLINECOUNT -= 20
             End If
 
@@ -1676,8 +1645,8 @@ Module publicfunctions
             End If
 
             If DiscApplied Then
-                FillEJournalContent("")
-                FillEJournalContent("DISCOUNT INFORMATION")
+                FillEJournalContent("", {}, "C", False, True)
+                FillEJournalContent("DISCOUNT INFORMATION", {}, "C", False, True)
             End If
 
             If DiscApplied Then
@@ -1691,57 +1660,57 @@ Module publicfunctions
                                 'DISCAPPLIED = True
                                 SimpleTextDisplay(sender, e, "Customer ID:", FontDefault, 0, RECEIPTLINECOUNT - 68)
                                 SimpleTextDisplay(sender, e, reader("senior_id"), FontDefault, 60, RECEIPTLINECOUNT - 68)
-                                FillEJournalContent("Customer ID: " & reader("senior_id"))
+                                FillEJournalContent("Customer ID: " & reader("senior_id"), {}, "S", False, True)
                                 RECEIPTLINECOUNT += 10
                                 SimpleTextDisplay(sender, e, "Customer Name:", FontDefault, 0, RECEIPTLINECOUNT - 68)
                                 SimpleTextDisplay(sender, e, reader("senior_name"), FontDefault, 70, RECEIPTLINECOUNT - 68)
-                                FillEJournalContent("Customer Name: " & reader("senior_name"))
+                                FillEJournalContent("Customer Name: " & reader("senior_name"), {}, "S", False, True)
                                 RECEIPTLINECOUNT += 10
                                 SimpleTextDisplay(sender, e, "Phone:", FontDefault, 0, RECEIPTLINECOUNT - 68)
                                 SimpleTextDisplay(sender, e, reader("phone_number"), FontDefault, 60, RECEIPTLINECOUNT - 68)
-                                FillEJournalContent("Phone: " & reader("phone_number"))
+                                FillEJournalContent("Phone: " & reader("phone_number"), {}, "S", False, True)
                                 RECEIPTLINECOUNT += 10
                             End While
                         Else
                             SimpleTextDisplay(sender, e, "Customer ID:", FontDefault, 0, RECEIPTLINECOUNT - 68)
-                            FillEJournalContent("Customer ID:")
+                            FillEJournalContent("Customer ID:", {}, "S", False, True)
                             RECEIPTLINECOUNT += 10
                             SimpleTextDisplay(sender, e, "Customer Name:", FontDefault, 0, RECEIPTLINECOUNT - 68)
-                            FillEJournalContent("Customer Name:")
+                            FillEJournalContent("Customer Name:", {}, "S", False, True)
                             RECEIPTLINECOUNT += 10
                             SimpleTextDisplay(sender, e, "Phone:", FontDefault, 0, RECEIPTLINECOUNT - 68)
-                            FillEJournalContent("Phone:")
+                            FillEJournalContent("Phone:", {}, "S", False, True)
                             RECEIPTLINECOUNT += 10
                         End If
                     End Using
                 Else
                     SimpleTextDisplay(sender, e, "Customer ID:", FontDefault, 0, RECEIPTLINECOUNT - 68)
                     SimpleTextDisplay(sender, e, SeniorDetailsID, FontDefault, 60, RECEIPTLINECOUNT - 68)
-                    FillEJournalContent("Customer ID: " & SeniorDetailsID)
+                    FillEJournalContent("Customer ID: " & SeniorDetailsID, {}, "S", False, True)
                     RECEIPTLINECOUNT += 10
                     SimpleTextDisplay(sender, e, "Customer Name:", FontDefault, 0, RECEIPTLINECOUNT - 68)
                     SimpleTextDisplay(sender, e, SeniorDetailsName, FontDefault, 70, RECEIPTLINECOUNT - 68)
-                    FillEJournalContent("Customer Name: " & SeniorDetailsName)
+                    FillEJournalContent("Customer Name: " & SeniorDetailsName, {}, "S", False, True)
                     RECEIPTLINECOUNT += 10
                     SimpleTextDisplay(sender, e, "Phone:", FontDefault, 0, RECEIPTLINECOUNT - 68)
                     SimpleTextDisplay(sender, e, SeniorPhoneNumber, FontDefault, 60, RECEIPTLINECOUNT - 68)
-                    FillEJournalContent("Phone: " & SeniorPhoneNumber)
+                    FillEJournalContent("Phone: " & SeniorPhoneNumber, {}, "S", False, True)
                     RECEIPTLINECOUNT += 10
 
                 End If
 
 
                 SimpleTextDisplay(sender, e, "Customer Sign:", FontDefault, 0, RECEIPTLINECOUNT - 68)
-                FillEJournalContent("Customer Sign:")
+                FillEJournalContent("Customer Sign:", {}, "S", False, True)
                 RECEIPTLINECOUNT -= 50
             Else
                 RECEIPTLINECOUNT -= 40
             End If
 
             PrintCenterStars(sender, e, FontDefault, RECEIPTLINECOUNT + 15)
-            FillEJournalContent("*************************************")
+            FillEJournalContent("*************************************", {}, "C", True, True)
             PrintSmallLine(sender, e, FontDefaultLine, RECEIPTLINECOUNT)
-            FillEJournalContent("------------------------------------------------------------")
+            FillEJournalContent("------------------------------------------------------------", {}, "C", True, True)
             RECEIPTLINECOUNT += 30
 
         Catch ex As Exception
@@ -1777,11 +1746,11 @@ Module publicfunctions
             Dim dt As DataTable = New DataTable
             da.Fill(dt)
             CenterTextDisplay(sender, e, S_Dev_Comp_Name.ToUpper, BrandFont, RECEIPTLINECOUNT)
-            FillEJournalContent(S_Dev_Comp_Name.ToUpper)
+            FillEJournalContent(S_Dev_Comp_Name.ToUpper, {}, "C", True, True)
             RECEIPTLINECOUNT += 10
             For i As Integer = 0 To dt.Rows.Count - 1 Step +1
                 CenterTextDisplay(sender, e, dt(i)(2).ToUpper, FontDefault, RECEIPTLINECOUNT)
-                FillEJournalContent(dt(i)(2).ToUpper)
+                FillEJournalContent(dt(i)(2).ToUpper, {}, "C", False, True)
                 RECEIPTLINECOUNT += 10
             Next
 
@@ -1793,7 +1762,7 @@ Module publicfunctions
 
             For i As Integer = 0 To dt.Rows.Count - 1 Step +1
                 CenterTextDisplay(sender, e, dt(i)(2), FontDefaultBold, RECEIPTLINECOUNT)
-                FillEJournalContent(dt(i)(2))
+                FillEJournalContent(dt(i)(2), {}, "C", True, True)
                 RECEIPTLINECOUNT += 10
             Next
             If VoidReturn Then
@@ -1805,7 +1774,7 @@ Module publicfunctions
 
                 For i As Integer = 0 To dt.Rows.Count - 1 Step +1
                     CenterTextDisplay(sender, e, dt(i)(2), FontDefaultBold, RECEIPTLINECOUNT)
-                    FillEJournalContent(dt(i)(2))
+                    FillEJournalContent(dt(i)(2), {}, "C", True, True)
                     RECEIPTLINECOUNT += 10
                 Next
             End If
@@ -1813,24 +1782,24 @@ Module publicfunctions
 
             If ReceiptSummary Then
                 PrintCenterStars(sender, e, FontDefault, RECEIPTLINECOUNT)
-                FillEJournalContent("*************************************")
+                FillEJournalContent("*************************************", {}, "C", True, True)
                 PrintSmallLine(sender, e, FontDefaultLine, RECEIPTLINECOUNT - 15)
-                FillEJournalContent("------------------------------------------------------------")
+                FillEJournalContent("------------------------------------------------------------", {}, "C", True, True)
                 RECEIPTLINECOUNT += 20
                 CenterTextDisplay(sender, e, "RECEIPT SUMMARY", FontDefaultBold, RECEIPTLINECOUNT)
-                FillEJournalContent("RECEIPT SUMMARY")
+                FillEJournalContent("RECEIPT SUMMARY", {}, "C", True, True)
                 RECEIPTLINECOUNT += 10
                 With POS
                     For i As Integer = 0 To .DataGridViewOrders.Rows.Count - 1 Step +1
                         RightToLeftDisplay(sender, e, RECEIPTLINECOUNT, .DataGridViewOrders.Rows(i).Cells(6).Value, .DataGridViewOrders.Rows(i).Cells(1).Value, FontDefault, 0, 0)
-                        FillEJournalContent(.DataGridViewOrders.Rows(i).Cells(6).Value & "          " & .DataGridViewOrders.Rows(i).Cells(1).Value)
+                        FillEJournalContent(.DataGridViewOrders.Rows(i).Cells(6).Value & "          ", { .DataGridViewOrders.Rows(i).Cells(6).Value, .DataGridViewOrders.Rows(i).Cells(1).Value}, "LR", False, False)
                         RECEIPTLINECOUNT += 10
                     Next
                 End With
             End If
 
-            FillEJournalContent("   ---***---***---***---***---  ")
-            FillEJournalContent("")
+            FillEJournalContent("   ---***---***---***---***---  ", {}, "C", True, True)
+            FillEJournalContent("", {}, "C", True, True)
         Catch ex As Exception
             AuditTrail.LogToAuditTral("System", "Public Module: " & ex.ToString, "Critical")
 

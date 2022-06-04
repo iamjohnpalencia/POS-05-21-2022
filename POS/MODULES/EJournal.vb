@@ -3,15 +3,35 @@ Imports System.Text
 Imports MySql.Data.MySqlClient
 
 Module EJournal
-
-    Public Sub FillEJournalContent(ContentStr As String)
-        EJOURLAN_Content &= ContentStr & vbCrLf
+    Property PosWriter As Boolean = False
+    Public Sub FillEJournalContent(EjornalString As String, LoopText As String(), Position As String, TextFont As Boolean, CopyRow As Boolean)
+        EJOURLAN_Content &= EjornalString & vbCrLf
         EJOURNAL_TotalLines += 1
+
+        If PosWriter Then
+            Select Case POS.Reprint
+                Case 1
+                    Select Case CopyRow
+                        Case True
+                            Dim StrChange As String() = {EjornalString}
+                            CreateXMLFile(Position, StrChange, publicfunctions.XML_Writer, TextFont)
+                        Case False
+                            CreateXMLFile(Position, LoopText, publicfunctions.XML_Writer, TextFont)
+                    End Select
+            End Select
+        Else
+            Select Case CopyRow
+                Case True
+                    Dim StrChange As String() = {EjornalString}
+                    CreateXMLFile(Position, StrChange, publicfunctions.XML_Writer, TextFont)
+                Case False
+                    CreateXMLFile(Position, LoopText, publicfunctions.XML_Writer, TextFont)
+            End Select
+        End If
     End Sub
 
     Public Sub InsertIntoEJournal()
         Try
-
             Dim ConnectionLocal As MySqlConnection = LocalhostConn()
             Dim Query As String = "INSERT INTO loc_e_journal (`totallines`, `content`, `crew_id`, `store_id`, `created_at`, `active`, `zreading`, `synced`) VALUES (@1,@2,@3,@4,@5,@6,@7,@8)"
             Dim Command As MySqlCommand = New MySqlCommand(Query, ConnectionLocal)
@@ -23,7 +43,6 @@ Module EJournal
             Command.Parameters.Add("@6", MySqlDbType.Text).Value = "1"
             Command.Parameters.Add("@7", MySqlDbType.Text).Value = S_Zreading
             Command.Parameters.Add("@8", MySqlDbType.Text).Value = "Unsynced"
-            Console.Write(Query)
             Command.ExecuteNonQuery()
             EJOURLAN_Content = ""
             EJOURNAL_TotalLines = 0

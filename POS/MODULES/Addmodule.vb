@@ -40,7 +40,7 @@ Module Addmodule
         End Try
     End Sub
     Public Sub SendErrorReport(MSG)
-        Console.WriteLine(MSG)
+
         Dim ConnectionLocal As MySqlConnection = LocalhostConn()
         'If ConnectionLocal.State = ConnectionState.Open Then
         Try
@@ -265,6 +265,28 @@ Module Addmodule
             SendErrorReport(ex.ToString)
         End Try
     End Sub
+#Region "Save XML Info"
+    Public Sub SaveXMLInfo(xmlName As String)
+        Try
+            Dim ConnectionLocal As MySqlConnection = LocalhostConn()
+            Dim Query As String = "INSERT INTO `loc_xml_ref`(`xml_name`, `zreading`, `created_by`, `created_at`, `status`) VALUES (@1,@2,@3,@4,@5)"
+            Dim Command As MySqlCommand = New MySqlCommand(Query, ConnectionLocal)
+            Command.Parameters.Add("@1", MySqlDbType.Text).Value = xmlName
+            Command.Parameters.Add("@2", MySqlDbType.Text).Value = S_Zreading
+            Command.Parameters.Add("@3", MySqlDbType.Text).Value = ClientCrewID
+            Command.Parameters.Add("@4", MySqlDbType.Text).Value = FullDate24HR()
+            Command.Parameters.Add("@5", MySqlDbType.Text).Value = 1
+            Command.ExecuteNonQuery()
+            ConnectionLocal.Close()
+
+        Catch ex As Exception
+            AuditTrail.LogToAuditTral("System", "Add Module: " & ex.ToString, "Critical")
+
+            SendErrorReport(ex.ToString)
+        End Try
+
+    End Sub
+#End Region
 #Region "Install Updates"
     Public Sub InstallUpdatesCategory(FromPosUpdate As Integer)
         Try

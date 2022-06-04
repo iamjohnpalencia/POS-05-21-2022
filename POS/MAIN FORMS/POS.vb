@@ -3,6 +3,9 @@ Imports System.Drawing.Printing
 Imports System.Threading
 Imports System.Data
 Imports System.Linq
+Imports System.Xml
+Imports System.Text
+
 Public Class POS
     Private WithEvents printdoc As PrintDocument = New PrintDocument
     'Private WithEvents printdoc2 As PrintDocument = New PrintDocument
@@ -41,31 +44,6 @@ Public Class POS
             Enabled = False
             BegBalance.Show()
             BegBalance.TopMost = True
-
-            'DataGridViewOrders.CellBorderStyle = DataGridViewCellBorderStyle.None
-
-
-            'If CheckForInternetConnection() Then
-            '    Enabled = False
-            '    CheckingForUpdates.Show()
-            '    CheckingForUpdates.TopMost = True
-
-            '    If ValidCloudConnection = True Then
-            '        'GetRowCount()
-            '        BackgroundWorkerUpdates.WorkerReportsProgress = True
-            '        BackgroundWorkerUpdates.WorkerSupportsCancellation = True
-            '        BackgroundWorkerUpdates.RunWorkerAsync()
-            '    Else
-
-            '        'CheckingForUpdates.LabelCheckingUpdates.Text = "Invalid cloud server connection."
-            '    End If
-            'Else
-            '    Enabled = False
-            '    BegBalance.Show()
-            '    BegBalance.TopMost = True
-            'End If
-
-
 
         Catch ex As Exception
             AuditTrail.LogToAuditTral("System", "POS: " & ex.ToString, "Critical")
@@ -1736,6 +1714,14 @@ Public Class POS
                     Next
                 End With
 
+                EJournal.PosWriter = True
+                Dim XMLName As String = S_TRANSACTION_NUMBER & FullDateFormatForSaving().ToString & ".xml"
+                XML_Writer = New XmlTextWriter(pdfSharpMod.XML_Path & XMLName, Encoding.UTF8)
+                XML_Writer.WriteStartDocument(True)
+                XML_Writer.Formatting = Formatting.Indented
+                XML_Writer.Indentation = 2
+                XML_Writer.WriteStartElement("Table")
+
                 ProductLine *= 2
                 TotalLines = CountHeaderLine + ProductLine + CountFooterLine + BodyLine + DiscountLine
                 printdoc.DefaultPageSettings.PaperSize = New PaperSize("Custom", ReturnPrintSize(), TotalLines)
@@ -1754,6 +1740,13 @@ Public Class POS
                     Next
                     Reprint = 1
                 End If
+
+                XML_Writer.WriteEndElement()
+                XML_Writer.WriteEndDocument()
+                XML_Writer.Close()
+
+                SaveXMLInfo(XMLName)
+
             Catch ex As Exception
                 SendErrorReport(ex.ToString)
                 MessageBox.Show("An error occurred while trying to load the " &
@@ -1841,6 +1834,7 @@ Public Class POS
     End Sub
     Private Sub PrintDocument1_PrintPage(sender As Object, e As PrintPageEventArgs) Handles printdoc.PrintPage
         Try
+
             Dim FontDefault As Font
             Dim AddLine As Integer = 20
             Dim CategorySpacing As Integer = 20
@@ -1863,6 +1857,7 @@ Public Class POS
             End If
 
             ReceiptFooterOne(sender, e, False, True)
+
 
             AuditTrail.LogToAuditTral("Transaction", "POS/Transaction Details: " & SiNumberToString, "Normal")
 

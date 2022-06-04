@@ -7,6 +7,10 @@ Imports PdfSharp.Drawing
 Imports PdfSharp.Pdf
 Imports System.IO
 Imports System.Text
+Imports System.Drawing
+Imports System.Drawing.Imaging
+Imports System.Xml
+Imports EJOURNAL_PDF
 
 Public Class Reports
     Private WithEvents printdoc As PrintDocument = New PrintDocument
@@ -130,7 +134,7 @@ Public Class Reports
             If ClientRole = "Crew" Then
                 ButtonZReading.Enabled = False
                 ButtonZREADREPRINT.Enabled = False
-                ButtonSystemLogs.Enabled = False
+                ButtonEJournalPDF.Enabled = False
                 ButtonUserLogs.Enabled = False
                 ButtonEJournal.Enabled = False
                 ButtonAuditTrail.Enabled = False
@@ -1036,40 +1040,57 @@ Public Class Reports
         If DataGridViewTransactionDetails.Rows.Count > 0 Then
             total = SumOfColumnsToDecimal(DataGridViewTransactionDetails, 3)
             Try
-
-                Dim TotalLines As Integer = 0
-                Dim BodyLine As Integer = 540
-                If DataGridViewDaily.SelectedRows(0).Cells(2).Value > 0 Then
-                    BodyLine = 570
-                Else
-                    BodyLine = 500
-                End If
-                Dim CountHeaderLine As Integer = count("id", "loc_receipt WHERE type = 'Header' AND status = 1")
-                Dim ProductLine As Integer = 0
-                Dim CountFooterLine As Integer = count("id", "loc_receipt WHERE type = 'Footer' AND status = 1")
-
-                CountHeaderLine *= 10
-                CountFooterLine *= 10
-
-                For i As Integer = 0 To DataGridViewTransactionDetails.Rows.Count - 1 Step +1
-                    ProductLine += 10
-                    If DataGridViewTransactionDetails.Rows(i).Cells(5).Value = "YES" Then
-                        ProductLine += 10
+                If DataGridViewDaily.SelectedRows.Count = 1 Then
+                    Dim TotalLines As Integer = 0
+                    Dim BodyLine As Integer = 540
+                    If DataGridViewDaily.SelectedRows(0).Cells(2).Value > 0 Then
+                        BodyLine = 570
+                    Else
+                        BodyLine = 500
                     End If
-                Next
+                    Dim CountHeaderLine As Integer = count("id", "loc_receipt WHERE type = 'Header' AND status = 1")
+                    Dim ProductLine As Integer = 0
+                    Dim CountFooterLine As Integer = count("id", "loc_receipt WHERE type = 'Footer' AND status = 1")
 
-                TotalLines = CountHeaderLine + ProductLine + CountFooterLine + BodyLine
-                printdoc.DefaultPageSettings.PaperSize = New PaperSize("Custom", ReturnPrintSize(), TotalLines)
+                    CountHeaderLine *= 10
+                    CountFooterLine *= 10
 
-                If S_Reprint = "YES" Then
-                    printdoc.Print()
-                Else
-                    PrintPreviewDialog1.Document = printdoc
-                    PrintPreviewDialog1.ShowDialog()
+                    For i As Integer = 0 To DataGridViewTransactionDetails.Rows.Count - 1 Step +1
+                        ProductLine += 10
+                        If DataGridViewTransactionDetails.Rows(i).Cells(5).Value = "YES" Then
+                            ProductLine += 10
+                        End If
+                    Next
+
+                    TotalLines = CountHeaderLine + ProductLine + CountFooterLine + BodyLine
+                    printdoc.DefaultPageSettings.PaperSize = New PaperSize("Custom", ReturnPrintSize(), TotalLines)
+                    Dim TrnID = DataGridViewDaily.SelectedRows(0).Cells(0).Value.ToString
+
+                    Dim XMLName As String = "R" & TrnID & FullDateFormatForSaving().ToString & ".xml"
+
+
+                    XML_Writer = New XmlTextWriter(pdfSharpMod.XML_Path & XMLName, Encoding.UTF8)
+                    XML_Writer.WriteStartDocument(True)
+                    XML_Writer.Formatting = Formatting.Indented
+                    XML_Writer.Indentation = 2
+                    XML_Writer.WriteStartElement("Table")
+
+                    If S_Reprint = "YES" Then
+                        printdoc.Print()
+                    Else
+                        PrintPreviewDialog1.Document = printdoc
+                        PrintPreviewDialog1.ShowDialog()
+                    End If
+
+                    XML_Writer.WriteEndElement()
+                    XML_Writer.WriteEndDocument()
+                    XML_Writer.Close()
+                    SaveXMLInfo(XMLName)
+
+                    AuditTrail.LogToAuditTral("Report", "Reports/Daily Sales: Reprint Sales, " & ClientCrewID, "Normal")
+
+                    InsertIntoEJournal()
                 End If
-                AuditTrail.LogToAuditTral("Report", "Reports/Daily Sales: Reprint Sales, " & ClientCrewID, "Normal")
-
-                InsertIntoEJournal()
 
             Catch ex As Exception
                 MessageBox.Show("An error occurred while trying to load the " &
@@ -2123,9 +2144,9 @@ Public Class Reports
 
     Private Sub ToolStripButton3_Click(sender As Object, e As EventArgs) Handles ToolStripButton3.Click
         Try
-            Dim document As PdfDocument = New PdfDocument
+            Dim document As Pdf.PdfDocument = New Pdf.PdfDocument
             document.Info.Title = "Created with PDFsharp"
-            Dim page As PdfPage = document.Pages.Add
+            Dim page As Pdf.PdfPage = document.Pages.Add
             Dim gfx As XGraphics = XGraphics.FromPdfPage(page)
             Dim font As XFont = New XFont("Verdana", 9, XFontStyle.Regular)
             Dim font1 As XFont = New XFont("Verdana", 9, XFontStyle.Bold)
@@ -3237,7 +3258,7 @@ Public Class Reports
     Private Sub ToolStripComboBoxStatus_TextChanged(sender As Object, e As EventArgs) Handles ToolStripComboBoxStatus.SelectedIndexChanged
         ToolStripButton6.PerformClick()
     End Sub
-
+    Dim sfd As SaveFileDialog = New SaveFileDialog()
     Private Sub Button2_Click(sender As Object, e As EventArgs) Handles ButtonXREAD.Click
         Try
             AuditTrail.LogToAuditTral("System", "Reports/Others: Accessed X-READ, " & ClientCrewID, "Normal")
@@ -3246,13 +3267,25 @@ Public Class Reports
             FillZreadData(" zreading = '" & S_Zreading & "'", S_Zreading, S_Zreading)
             printdocZRead.DefaultPageSettings.PaperSize = New PaperSize("Custom", ReturnPrintSize(), 1020)
 
+            Dim XMLName As String = "XREAD" & FullDateFormatForSaving().ToString & ".xml"
+            XML_Writer = New XmlTextWriter(pdfSharpMod.XML_Path & XMLName, Encoding.UTF8)
+            XML_Writer.WriteStartDocument(True)
+            XML_Writer.Formatting = Formatting.Indented
+            XML_Writer.Indentation = 2
+            XML_Writer.WriteStartElement("Table")
+
             If S_Print_XZRead = "YES" Then
                 printdocZRead.Print()
             Else
                 PrintPreviewDialogZread.Document = printdocZRead
                 PrintPreviewDialogZread.ShowDialog()
             End If
+
+            XML_Writer.WriteEndElement()
+            XML_Writer.WriteEndDocument()
+            XML_Writer.Close()
             InsertIntoEJournal()
+            SaveXMLInfo(XMLName)
         Catch ex As Exception
             MsgBox(ex.ToString)
             SendErrorReport(ex.ToString)
@@ -3262,7 +3295,9 @@ Public Class Reports
             GLOBAL_SYSTEM_LOGS(SystemLogType, SystemLogDesc)
         End Try
     End Sub
+    Private Sub printdocZRead_PrintPage_one()
 
+    End Sub
     Private Sub Button8_Click(sender As Object, e As EventArgs) Handles ButtonZReading.Click
         Try
             ReprintZRead = False
@@ -3284,14 +3319,31 @@ Public Class Reports
                 FillZreadData(" zreading = '" & S_Zreading & "'", S_Zreading, S_Zreading)
                 printdocZRead.DefaultPageSettings.PaperSize = New PaperSize("Custom", ReturnPrintSize(), 1020)
 
+                Dim XMLName As String = "ZREAD" & FullDateFormatForSaving().ToString & ".xml"
+
+                XML_Writer = New XmlTextWriter(pdfSharpMod.XML_Path & XMLName, Encoding.UTF8)
+                XML_Writer.WriteStartDocument(True)
+                XML_Writer.Formatting = Formatting.Indented
+                XML_Writer.Indentation = 2
+                XML_Writer.WriteStartElement("Table")
+                XML_Writer.WriteEndElement()
+                XML_Writer.WriteEndDocument()
+                XML_Writer.Close()
+
                 If S_Print_XZRead = "YES" Then
                     printdocZRead.Print()
                 Else
                     PrintPreviewDialogZread.Document = printdocZRead
                     PrintPreviewDialogZread.ShowDialog()
                 End If
+
+                XML_Writer.WriteEndElement()
+                XML_Writer.WriteEndDocument()
+                XML_Writer.Close()
+
                 InsertIntoEJournal()
                 GetOldGrandtotal()
+                SaveXMLInfo(XMLName)
                 'Update Zread
                 S_Zreading = Format(DateAdd("d", 1, S_Zreading), "yyyy-MM-dd")
                 sql = "UPDATE loc_settings SET S_Zreading = '" & S_Zreading & "'"
@@ -3351,6 +3403,16 @@ Public Class Reports
             FIllZReadReprint(FromDate, ToDate)
 
             printdocZRead.DefaultPageSettings.PaperSize = New PaperSize("Custom", ReturnPrintSize(), 1050)
+
+            Dim XMLName As String = "ZREADREP" & FullDateFormatForSaving().ToString & ".xml"
+
+            XML_Writer = New XmlTextWriter(pdfSharpMod.XML_Path & XMLName, Encoding.UTF8)
+            XML_Writer.WriteStartDocument(True)
+            XML_Writer.Formatting = Formatting.Indented
+            XML_Writer.Indentation = 2
+            XML_Writer.WriteStartElement("Table")
+
+
             If S_Print_XZRead = "YES" Then
                 printdocZRead.Print()
             Else
@@ -3358,6 +3420,10 @@ Public Class Reports
                 PrintPreviewDialogZread.ShowDialog()
             End If
 
+            XML_Writer.WriteEndElement()
+            XML_Writer.WriteEndDocument()
+            XML_Writer.Close()
+            SaveXMLInfo(XMLName)
             InsertIntoEJournal()
         Catch ex As Exception
             AuditTrail.LogToAuditTral("System", "Reports: " & ex.ToString, "Critical")
@@ -3407,7 +3473,7 @@ Public Class Reports
             cmd = New MySqlCommand(sql, connectionlocal)
             da = New MySqlDataAdapter(cmd)
             da.Fill(dt)
-            Console.WriteLine(sql)
+
             For i As Integer = 0 To dt.Rows.Count - 1 Step +1
                 GrandTotalLines += dt(i)(0)
                 WholeContentLine &= dt(i)(1)
@@ -3446,4 +3512,33 @@ Public Class Reports
         AuditTrail.LogToAuditTral("System", "Reports: Accessed AUDIT TRAIL, " & ClientCrewID, "Normal")
         AuditTrail.Show()
     End Sub
+
+    Private Sub ButtonEJournalPDF_Click(sender As Object, e As EventArgs) Handles ButtonEJournalPDF.Click
+        Try
+            'zreading >= @Fromdate AND zreading <= @ToDate
+            Dim ConnectionLocal As MySqlConnection = LocalhostConn()
+            Dim Query As String = "SELECT xml_name FROM loc_xml_ref WHERE DATE(zreading) BETWEEN DATE(@FromDate) AND DATE(@ToDate) ORDER BY created_at DESC"
+            Dim Command As MySqlCommand = New MySqlCommand(Query, ConnectionLocal)
+            Command.Parameters.Clear()
+            Command.Parameters.Add("@FromDate", MySqlDbType.Date).Value = Format(DateTimePickerZXreading.Value, "yyyy-MM-dd")
+            Command.Parameters.Add("@ToDate", MySqlDbType.Date).Value = Format(DateTimePickerZXreadingTo.Value, "yyyy-MM-dd")
+            Dim ListOfXml As New List(Of String)
+            Using Reader As MySqlDataReader = Command.ExecuteReader
+                While Reader.Read
+                    If Reader.HasRows Then
+                        ListOfXml.Add(Reader("xml_name").ToString)
+                    End If
+                End While
+            End Using
+
+            Dim f As New EJOURNAL_PDF.EJOURNAL_PDF(ListOfXml)
+            f.Show()
+
+            AuditTrail.LogToAuditTral("Report", "Reports/Others: E-Journal PDF Generated, " & ClientCrewID, "Normal")
+        Catch ex As Exception
+            MsgBox(ex.ToString)
+        End Try
+    End Sub
+
+
 End Class
